@@ -43,18 +43,51 @@ async function initApp() {
 }
 
 async function loadMyWave() {
-    const container = document.getElementById('waveTracksContainer');
+    await loadLikedTracks('yandex');
+}
+
+window.loadLikedTracks = async function(source) {
+    document.querySelectorAll('#likedSourceSelector .source-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.source === source);
+    });
+    
+    const container = document.getElementById('likedTracksContainer');
     if (!container) return;
     
     container.innerHTML = '<div style="flex: 1; min-width: 200px; text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p style="margin-top: 12px;">Загрузка...</p></div>';
     
     try {
-        const tracks = await apiCall('recommendations');
-        displayWaveTracks(tracks || []);
+        const data = await apiCall('liked-tracks?source=' + source);
+        displayLikedTracks(data.tracks || []);
     } catch (error) {
-        console.error('Load My Wave error:', error);
-        container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ff6b6b;"></i><p style="margin-top: 12px;">Настройте токены в профиле</p></div>';
+        console.error('Load liked tracks error:', error);
+        container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ff6b6b;"></i><p style="margin-top: 12px;">Ошибка загрузки</p></div>';
     }
+};
+
+function displayLikedTracks(tracks) {
+    const container = document.getElementById('likedTracksContainer');
+    if (!container) return;
+    
+    if (!tracks.length) {
+        container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px;"><i class="fas fa-heart" style="font-size: 2rem; color: var(--text-muted);"></i><p style="margin-top: 12px; color: var(--text-muted);">Треки не найдены. Настройте токен в профиле.</p></div>';
+        return;
+    }
+    
+    let html = '';
+    tracks.slice(0, 20).forEach(function(track) {
+        const artists = track.artists ? (Array.isArray(track.artists) ? track.artists.join(', ') : track.artists) : '';
+        const cover = track.cover_uri ? '<img src="' + track.cover_uri + '" alt="" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px;">' : '<div style="width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 12px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-music fa-2x" style="color: #fff;"></i></div>';
+        
+        html += '<div class="wave-track-card" onclick="playTrack(\'' + track.id + '\')" style="min-width: 180px; flex-shrink: 0; cursor: pointer;">' +
+            '<div style="position: relative;">' + cover +
+            '<div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-play" style="color: #fff;"></i></div>' +
+            '</div>' +
+            '<h4 style="margin: 8px 0 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(track.title || 'Неизвестно') + '</h4>' +
+            '<p style="font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + escapeHtml(artists) + '</p>' +
+            '</div>';
+    });
+    container.innerHTML = html;
 }
 
 function displayWaveTracks(tracks) {
@@ -80,6 +113,50 @@ function displayWaveTracks(tracks) {
             '</div>';
     });
     container.innerHTML = html;
+}
+
+window.changeWaveSource = function(source) {
+    loadLikedTracks(source);
+};
+
+function displayWavesList(waves) {
+    const container = document.getElementById('waveTracksContainer');
+    const playlistsContainer = document.getElementById('wavePlaylistsContainer');
+    
+    if (!container || !playlistsContainer) return;
+    
+    if (waves.length === 0) {
+        container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px;"><i class="fas fa-music" style="font-size: 2rem; color: var(--text-muted);"></i><p style="margin-top: 12px; color: var(--text-muted);">Миксы не найдены</p></div>';
+        return;
+    }
+    
+    playlistsContainer.innerHTML = '<span style="font-size: 12px; color: var(--text-muted);">Выберите микс:</span>';
+    waves.slice(0, 10).forEach(function(wave) {
+        const btn = document.createElement('button');
+        btn.className = 'source-btn';
+        btn.style.fontSize = '11px';
+        btn.style.padding = '6px 12px';
+        btn.innerHTML = escapeHtml(wave.title);
+        btn.onclick = function() { loadWavePlaylist(wave.id); };
+        playlistsContainer.appendChild(btn);
+    });
+    playlistsContainer.style.display = 'flex';
+    container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px; color: var(--text-muted);"><i class="fas fa-hand-pointer" style="font-size: 1.5rem;"></i><p style="margin-top: 12px;">Выберите микс сверху</p></div>';
+}
+
+async function loadWavePlaylist(playlistId) {
+    const container = document.getElementById('waveTracksContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div style="flex: 1; min-width: 200px; text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i><p style="margin-top: 12px;">Загрузка...</p></div>';
+    
+    try {
+        const data = await apiCall('playlists/' + playlistId + '/tracks');
+        displayWaveTracks(data.tracks || []);
+    } catch (error) {
+        console.error('Load wave playlist error:', error);
+        container.innerHTML = '<div style="flex: 1; text-align: center; padding: 40px;"><i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ff6b6b;"></i><p style="margin-top: 12px;">Ошибка загрузки</p></div>';
+    }
 }
 
 window.changeWaveSource = function(source) {
@@ -220,7 +297,87 @@ window.switchTab = function(tabName) {
     }
 };
 
+let searchTimeout = null;
+
 window.performSearch = async function() {
+    var query = document.getElementById('globalSearch');
+    if (!query || !query.value.trim()) {
+        hideSearchDropdown();
+        return;
+    }
+    query = query.value.trim();
+    
+    showSearchLoading();
+    
+    try {
+        var results = await apiCall('search?q=' + encodeURIComponent(query));
+        displaySearchDropdown(results);
+    } catch (error) {
+        console.error('Search error:', error);
+        showSearchEmpty();
+    }
+};
+
+function showSearchLoading() {
+    var dropdown = document.getElementById('searchDropdown');
+    if (!dropdown) return;
+    dropdown.style.display = 'block';
+    dropdown.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Поиск...</div>';
+}
+
+function showSearchEmpty() {
+    var dropdown = document.getElementById('searchDropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = '<div class="search-no-results"><i class="fas fa-search"></i>Ничего не найдено</div>';
+}
+
+function hideSearchDropdown() {
+    var dropdown = document.getElementById('searchDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+function displaySearchDropdown(results) {
+    var dropdown = document.getElementById('searchDropdown');
+    if (!dropdown) return;
+    
+    var tracks = results.tracks || [];
+    var query = document.getElementById('globalSearch').value.trim();
+    
+    if (!tracks.length) {
+        showSearchEmpty();
+        return;
+    }
+    
+    var html = '';
+    
+    html += '<div class="search-section">Результаты</div>';
+    
+    tracks.slice(0, 6).forEach(function(t) {
+        var artists = t.artists ? t.artists.join(', ') : '';
+        var cover = t.cover_uri 
+            ? '<img src="' + t.cover_uri + '" alt="">'
+            : '<div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-music" style="color: #fff; font-size: 12px;"></i></div>';
+        
+        html += '<div class="search-item" onclick="playTrack(\'' + t.id + '\'); hideSearchDropdown();">' +
+            cover +
+            '<div class="search-item-info">' +
+            '<div class="search-item-title">' + escapeHtml(t.title) + '</div>' +
+            '<div class="search-item-artist">' + escapeHtml(artists) + '</div>' +
+            '</div>' +
+            '<div class="search-item-actions">' +
+            '<button onclick="event.stopPropagation(); addToQueue(\'' + t.id + '\')" title="В очередь"><i class="fas fa-list"></i></button>' +
+            '</div>' +
+            '</div>';
+    });
+    
+    if (tracks.length > 6) {
+        html += '<div class="search-more" onclick="document.getElementById(\'globalSearch\').value=\'' + escapeHtml(query) + '\'; performFullSearch(); hideSearchDropdown();">Ещё ' + (tracks.length - 6) + ' результатов →</div>';
+    }
+    
+    dropdown.innerHTML = html;
+}
+
+function performFullSearch() {
     var query = document.getElementById('globalSearch');
     if (!query || !query.value.trim()) return;
     query = query.value.trim();
@@ -230,14 +387,12 @@ window.performSearch = async function() {
         grid.innerHTML = '<div class="glass-card" style="padding: 40px; text-align: center;"><i class="fas fa-spinner fa-spin"></i></div>';
     }
     
-    try {
-        var results = await apiCall('search?q=' + encodeURIComponent(query));
+    apiCall('search?q=' + encodeURIComponent(query)).then(function(results) {
         displaySearchResults(results);
-    } catch (error) {
+    }).catch(function(error) {
         console.error('Search error:', error);
-        showNotification('Ошибка поиска', 'error');
-    }
-};
+    });
+}
 
 function displaySearchResults(results) {
     var container = document.getElementById('recommendationsGrid');
@@ -266,10 +421,45 @@ function displaySearchResults(results) {
 function setupGlobalEventListeners() {
     var globalSearch = document.getElementById('globalSearch');
     if (globalSearch) {
-        globalSearch.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') performSearch();
+        globalSearch.addEventListener('input', function(e) {
+            var query = e.target.value.trim();
+            
+            if (searchTimeout) clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                hideSearchDropdown();
+                return;
+            }
+            
+            searchTimeout = setTimeout(function() {
+                performSearch();
+            }, 300);
+        });
+        
+        globalSearch.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchTimeout) clearTimeout(searchTimeout);
+                performSearch();
+            }
+            if (e.key === 'Escape') {
+                hideSearchDropdown();
+                globalSearch.blur();
+            }
+        });
+        
+        globalSearch.addEventListener('focus', function() {
+            if (globalSearch.value.trim().length >= 2) {
+                performSearch();
+            }
         });
     }
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-box')) {
+            hideSearchDropdown();
+        }
+    });
     
     document.querySelectorAll('.nav-item[data-tab]').forEach(function(item) {
         item.addEventListener('click', function() {

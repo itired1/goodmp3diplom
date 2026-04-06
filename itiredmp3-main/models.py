@@ -14,6 +14,7 @@ class User(db.Model):
     avatar_url = db.Column(db.String(200))
     bio = db.Column(db.Text)
     yandex_token = db.Column(db.String(500))
+    yandex_uid = db.Column(db.String(50))
     vk_token = db.Column(db.String(500))
     soundcloud_token = db.Column(db.String(500))
     current_source = db.Column(db.String(20), default='yandex')

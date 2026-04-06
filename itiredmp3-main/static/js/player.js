@@ -6,6 +6,152 @@ let currentTrackIndex = 0;
 let isShuffle = false;
 let isRepeat = false;
 let bypassCensorship = true;
+let listenHistory = [];
+
+window.addToQueue = async function(trackId) {
+    try {
+        const track = await apiCall('track/' + trackId);
+        if (track) {
+            queue.push({
+                id: track.id,
+                title: track.title,
+                artists: track.artists,
+                cover_uri: track.cover_uri,
+                service: track.service,
+                url: track.url
+            });
+            showNotification('Добавлено в очередь', 'success');
+            updateQueueDisplay();
+        }
+    } catch (error) {
+        console.error('Add to queue error:', error);
+        showNotification('Ошибка добавления', 'error');
+    }
+};
+
+function updateQueueDisplay() {
+    const container = document.getElementById('queueContainer');
+    if (!container) return;
+    
+    if (!queue.length) {
+        container.innerHTML = '<div class="queue-placeholder"><i class="fas fa-list"></i><p>Очередь пуста</p></div>';
+        return;
+    }
+    
+    let html = '<div style="max-height: 400px; overflow-y: auto;">';
+    
+    if (currentTrack) {
+        html += '<div style="padding: 8px 12px; font-size: 11px; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border);">Сейчас играет</div>';
+        html += '<div class="search-item" style="background: var(--bg-tertiary); cursor: default;">';
+        var cover = currentTrack.cover_uri 
+            ? '<img src="' + currentTrack.cover_uri + '" alt="" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;">'
+            : '<div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-play" style="color: #fff;"></i></div>';
+        html += cover +
+            '<div class="search-item-info">' +
+            '<div class="search-item-title" style="color: var(--accent);">' + escapeHtml(currentTrack.title) + '</div>' +
+            '<div class="search-item-artist">' + escapeHtml(currentTrack.artists ? currentTrack.artists.join(', ') : '') + '</div>' +
+            '</div></div>';
+    }
+    
+    if (queue.length) {
+        html += '<div style="padding: 8px 12px; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px solid var(--border); margin-top: 8px;">В очереди (' + queue.length + ')</div>';
+        
+        queue.forEach(function(item, index) {
+            var cover = item.cover_uri 
+                ? '<img src="' + item.cover_uri + '" alt="" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;">'
+                : '<div style="width: 44px; height: 44px; background: var(--bg-tertiary); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-music" style="color: var(--text-secondary);"></i></div>';
+            
+            html += '<div class="search-item" onclick="playFromQueue(' + index + ')">' +
+                cover +
+                '<div class="search-item-info">' +
+                '<div class="search-item-title">' + escapeHtml(item.title) + '</div>' +
+                '<div class="search-item-artist">' + escapeHtml(item.artists ? item.artists.join(', ') : '') + '</div>' +
+                '</div>' +
+                '<button onclick="event.stopPropagation(); removeFromQueue(' + index + ')" style="padding: 6px; background: none; border: none; color: var(--text-secondary); cursor: pointer;"><i class="fas fa-times"></i></button>' +
+                '</div>';
+        });
+    }
+    
+    html += '</div>';
+    html += '<button onclick="queue=[];updateQueueDisplay();" class="glass-btn" style="width: 100%; margin-top: 12px; padding: 10px;"><i class="fas fa-trash"></i> Очистить очередь</button>';
+    
+    container.innerHTML = html;
+}
+
+window.playFromQueue = function(index) {
+    if (index >= 0 && index < queue.length) {
+        var item = queue.splice(index, 1)[0];
+        playTrack(item.id);
+        updateQueueDisplay();
+    }
+};
+
+window.removeFromQueue = function(index) {
+    if (index >= 0 && index < queue.length) {
+        queue.splice(index, 1);
+        updateQueueDisplay();
+    }
+};
+
+function addToHistory(track) {
+    if (!track) return;
+    
+    listenHistory = listenHistory.filter(function(t) { return t.id !== track.id; });
+    listenHistory.unshift({
+        id: track.id,
+        title: track.title,
+        artists: track.artists,
+        cover_uri: track.cover_uri,
+        service: track.service,
+        playedAt: new Date().toISOString()
+    });
+    
+    if (listenHistory.length > 50) {
+        listenHistory = listenHistory.slice(0, 50);
+    }
+}
+
+window.switchQueueTab = function(tab) {
+    document.getElementById('queueTabBtn').classList.toggle('active', tab === 'queue');
+    document.getElementById('historyTabBtn').classList.toggle('active', tab === 'history');
+    
+    if (tab === 'queue') {
+        updateQueueDisplay();
+    } else {
+        showHistory();
+    }
+};
+
+function showHistory() {
+    const container = document.getElementById('queueContainer');
+    if (!container) return;
+    
+    if (!listenHistory.length) {
+        container.innerHTML = '<div class="queue-placeholder"><i class="fas fa-history"></i><p>История пуста</p></div>';
+        return;
+    }
+    
+    let html = '<div style="padding: 8px 12px; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px solid var(--border);">Недавно слушали (' + listenHistory.length + ')</div>';
+    html += '<div style="max-height: 400px; overflow-y: auto;">';
+    
+    listenHistory.forEach(function(item) {
+        var cover = item.cover_uri 
+            ? '<img src="' + item.cover_uri + '" alt="" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;">'
+            : '<div style="width: 44px; height: 44px; background: var(--bg-tertiary); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-music" style="color: var(--text-secondary);"></i></div>';
+        
+        html += '<div class="search-item" onclick="playTrack(\'' + item.id + '\')">' +
+            cover +
+            '<div class="search-item-info">' +
+            '<div class="search-item-title">' + escapeHtml(item.title) + '</div>' +
+            '<div class="search-item-artist">' + escapeHtml(item.artists ? item.artists.join(', ') : '') + '</div>' +
+            '</div></div>';
+    });
+    
+    html += '</div>';
+    html += '<button onclick="listenHistory=[];showHistory();" class="glass-btn" style="width: 100%; margin-top: 12px; padding: 10px;"><i class="fas fa-trash"></i> Очистить историю</button>';
+    
+    container.innerHTML = html;
+}
 
 function initAudioPlayer() {
     audioPlayer = document.getElementById('audioPlayer');
@@ -70,6 +216,12 @@ window.togglePlay = function() {
             showNotification('Не удалось воспроизвести', 'error');
         });
     } else {
+        audioPlayer.pause();
+    }
+};
+
+window.pauseTrack = function() {
+    if (audioPlayer) {
         audioPlayer.pause();
     }
 };
@@ -238,6 +390,7 @@ async function playTrackById(trackId, trackData) {
             currentTrackIndex = 0;
             queue = [{ id: trackId, ...trackInfo }];
             
+            addToHistory(currentTrack);
             updatePlayerUI(currentTrack);
             updatePlayButton();
             updateQueueUI();
@@ -252,6 +405,7 @@ async function playTrackById(trackId, trackData) {
             await audioPlayer.play();
             
             currentTrack = { ...trackInfo };
+            addToHistory(currentTrack);
             updatePlayerUI(currentTrack);
             updatePlayButton();
             showMiniNotification(currentTrack);

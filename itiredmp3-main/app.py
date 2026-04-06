@@ -11,17 +11,30 @@ from functools import wraps
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['SECRET_KEY'] = Config.SECRET_KEY if hasattr(Config, 'SECRET_KEY') else 'your-secret-key-change-me'
 db.init_app(app)
+
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 cache = Cache(app)
 
+rooms = {}
+room_codes = {}
+
 def init_db():
     with app.app_context():
         db.create_all()
+        try:
+            from sqlalchemy import text
+            db.session.execute(text('ALTER TABLE users ADD COLUMN yandex_uid VARCHAR(50)'))
+            db.session.commit()
+        except:
+            pass
         if not db.session.query(User).filter_by(username='admin').first():
             admin = User(username='admin', email='admin@itired.com', is_admin=True, email_verified=True)
             admin.set_password('admin123')
@@ -333,14 +346,16 @@ def playlists():
     result = []
     
     if 'yandex' in services and user and user.yandex_token:
-        client = get_yandex_client(user.yandex_token)
-        if client:
-            try:
+        try:
+            client = get_yandex_client(user.yandex_token)
+            if client:
                 plists = client.users_playlists_list()
                 for p in plists:
-                    if hasattr(p, 'collective') and p.collective:
+                    if p.collective:
                         continue
-                    cover = f"https://{p.cover.uri.replace('%%', '300x300')}" if p.cover and p.cover.uri else None
+                    cover = None
+                    if p.cover and p.cover.uri:
+                        cover = f"https://{p.cover.uri.replace('%%', '300x300')}"
                     result.append({
                         'id': f"yandex_{p.kind}",
                         'title': p.title,
@@ -348,8 +363,10 @@ def playlists():
                         'cover_uri': cover,
                         'service': 'yandex'
                     })
-            except Exception as e:
-                print(f"Yandex playlists error: {e}")
+        except Exception as e:
+            print(f"Yandex playlists error: {e}")
+            import traceback
+            traceback.print_exc()
     
     if 'vk' in services and user and user.vk_token:
         vk = get_vk_api(user.vk_token)
@@ -410,53 +427,139 @@ def create_playlist():
         }
     })
 
+@app.route('/api/liked-tracks')
+@login_required
+def liked_tracks():
+    user = db.session.get(User, session['user_id'])
+    source = request.args.get('source', 'yandex')
+    tracks = []
+    
+    if source == 'yandex' and user and user.yandex_token:
+        try:
+            client = get_yandex_client(user.yandex_token)
+            if client:
+                liked = client.users_likes_tracks()
+                if liked and liked.tracks:
+                    for item in liked.tracks:
+                        try:
+                            track = item.track if hasattr(item, 'track') and item.track else item
+                            if not track or not hasattr(track, 'id') or not track.id:
+                                continue
+                            
+                            cover = None
+                            if hasattr(track, 'cover_uri') and track.cover_uri:
+                                cover = f"https://{track.cover_uri.replace('%%', '300x300')}"
+                            elif hasattr(track, 'albums') and track.albums and track.albums[0]:
+                                album = track.albums[0]
+                                if hasattr(album, 'cover_uri') and album.cover_uri:
+                                    cover = f"https://{album.cover_uri.replace('%%', '300x300')}"
+                            
+                            artists = []
+                            if hasattr(track, 'artists') and track.artists:
+                                for a in track.artists:
+                                    if a and hasattr(a, 'name'):
+                                        artists.append(a.name)
+                                    elif a:
+                                        artists.append(str(a))
+                            
+                            duration = 0
+                            if hasattr(track, 'duration_ms') and track.duration_ms:
+                                duration = track.duration_ms
+                            elif hasattr(track, 'albums') and track.albums and track.albums[0]:
+                                duration = getattr(track.albums[0], 'duration_ms', 0)
+                            
+                            tracks.append({
+                                'id': f"yandex_{track.id}",
+                                'title': getattr(track, 'title', 'Неизвестно'),
+                                'artists': artists if artists else ['Unknown'],
+                                'duration': duration,
+                                'cover_uri': cover,
+                                'service': 'yandex'
+                            })
+                        except Exception as te:
+                            continue
+        except Exception as e:
+            print(f"Yandex liked tracks: {e}")
+    
+    elif source == 'vk' and user and user.vk_token:
+        try:
+            vk = get_vk_api(user.vk_token)
+            if vk:
+                audios = vk.audio.get()
+                if 'items' in audios:
+                    for t in audios['items']:
+                        tracks.append({
+                            'id': f"vk_{t['id']}",
+                            'title': t['title'],
+                            'artists': [t['artist']],
+                            'duration': t['duration'] * 1000,
+                            'cover_uri': t.get('album', {}).get('thumb', {}).get('photo_300'),
+                            'service': 'vk'
+                        })
+        except Exception as e:
+            print(f"VK liked tracks: {e}")
+    
+    return jsonify({'tracks': tracks, 'count': len(tracks)})
+
 @app.route('/api/playlists/<playlist_id>/tracks')
 @login_required
 def playlist_tracks(playlist_id):
     user = db.session.get(User, session['user_id'])
     tracks = []
     
+    if playlist_id == 'yandex_liked':
+        return liked_tracks()
+    
     if playlist_id.startswith('yandex_'):
         kind = int(playlist_id.replace('yandex_', ''))
-        client = get_yandex_client(user.yandex_token) if user else None
-        if client:
+        if user and user.yandex_token:
             try:
-                all_playlists = client.users_playlists_list()
-                target_playlist = None
-                for p in all_playlists:
-                    if p.kind == kind:
-                        target_playlist = p
-                        break
-                
-                if target_playlist:
-                    for pt in target_playlist.tracks:
-                        try:
-                            t = pt.fetch_track()
-                            if t:
-                                cover = None
-                                if t.cover_uri:
-                                    cover = f"https://{t.cover_uri.replace('%%', '300x300')}"
-                                artists = []
-                                if t.artists:
-                                    for a in t.artists:
-                                        if hasattr(a, 'name'):
-                                            artists.append(a.name)
-                                        elif isinstance(a, str):
-                                            artists.append(a)
-                                        else:
-                                            artists.append(str(a))
-                                
-                                tracks.append({
-                                    'id': f"yandex_{t.id}",
-                                    'title': t.title,
-                                    'artists': artists if artists else ['Unknown'],
-                                    'duration': t.duration_ms,
-                                    'cover_uri': cover,
-                                    'service': 'yandex'
-                                })
-                        except Exception as te:
-                            print(f"Track fetch error: {te}")
-                            continue
+                client = get_yandex_client(user.yandex_token)
+                if client:
+                    playlist = client.users_playlists(kind=kind)
+                    if playlist and playlist.tracks:
+                        track_ids = []
+                        for item in playlist.tracks:
+                            if hasattr(item, 'track_id'):
+                                track_ids.append((item.track_id, item.album_id))
+                            elif hasattr(item, 'id'):
+                                track_ids.append((item.id, None))
+                        
+                        if track_ids:
+                            for track_id, album_id in track_ids[:100]:
+                                try:
+                                    full_track = client.tracks([track_id])[0]
+                                    if full_track:
+                                        cover = None
+                                        if hasattr(full_track, 'cover_uri') and full_track.cover_uri:
+                                            cover = f"https://{full_track.cover_uri.replace('%%', '300x300')}"
+                                        elif hasattr(full_track, 'albums') and full_track.albums:
+                                            album = full_track.albums[0]
+                                            if hasattr(album, 'cover_uri') and album.cover_uri:
+                                                cover = f"https://{album.cover_uri.replace('%%', '300x300')}"
+                                        
+                                        artists = []
+                                        if hasattr(full_track, 'artists') and full_track.artists:
+                                            for a in full_track.artists:
+                                                if hasattr(a, 'name'):
+                                                    artists.append(a.name)
+                                                else:
+                                                    artists.append(str(a))
+                                        
+                                        duration = 0
+                                        if hasattr(full_track, 'duration_ms'):
+                                            duration = full_track.duration_ms
+                                        
+                                        tracks.append({
+                                            'id': f"yandex_{full_track.id}",
+                                            'title': getattr(full_track, 'title', 'Неизвестно'),
+                                            'artists': artists if artists else ['Unknown'],
+                                            'duration': duration,
+                                            'cover_uri': cover,
+                                            'service': 'yandex'
+                                        })
+                                except Exception as te:
+                                    continue
             except Exception as e:
                 print(f"Yandex playlist error: {e}")
                 import traceback
@@ -710,19 +813,39 @@ def friends_list():
 @app.route('/api/friends/add/<int:friend_id>', methods=['POST'])
 @login_required
 def add_friend(friend_id):
-    user = db.session.get(User, session['user_id'])
-    if user.id == friend_id:
-        return jsonify({'success': False, 'message': 'Нельзя добавить себя'}), 400
-    existing = db.session.query(Friend).filter(
-        ((Friend.user_id == user.id) & (Friend.friend_id == friend_id)) |
-        ((Friend.user_id == friend_id) & (Friend.friend_id == user.id))
-    ).first()
-    if existing:
-        return jsonify({'success': False, 'message': 'Запрос уже существует'}), 400
-    friend = Friend(user_id=user.id, friend_id=friend_id, status='pending', taste_match=random.randint(40, 95))
-    db.session.add(friend)
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Запрос отправлен'})
+    try:
+        user = db.session.get(User, session['user_id'])
+        if user.id == friend_id:
+            return jsonify({'success': False, 'message': 'Нельзя добавить себя'}), 400
+        
+        friend_user = db.session.get(User, friend_id)
+        if not friend_user:
+            return jsonify({'success': False, 'message': 'Пользователь не найден'}), 404
+        
+        existing = db.session.query(Friend).filter(
+            ((Friend.user_id == user.id) & (Friend.friend_id == friend_id)) |
+            ((Friend.user_id == friend_id) & (Friend.friend_id == user.id))
+        ).first()
+        
+        if existing:
+            if existing.status == 'accepted':
+                return jsonify({'success': False, 'message': 'Вы уже друзья'}), 400
+            elif existing.status == 'pending':
+                if existing.user_id == friend_id:
+                    existing.status = 'accepted'
+                    db.session.commit()
+                    return jsonify({'success': True, 'message': 'Запрос принят'})
+                return jsonify({'success': False, 'message': 'Запрос уже существует'}), 400
+        
+        friend = Friend(user_id=user.id, friend_id=friend_id, status='accepted', taste_match=random.randint(40, 95))
+        db.session.add(friend)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Друг добавлен'})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Add friend error: {e}")
+        return jsonify({'success': False, 'message': 'Ошибка сервера'}), 500
 
 @app.route('/api/friends/accept/<int:friend_id>', methods=['POST'])
 @login_required
@@ -999,5 +1122,228 @@ def get_active_banner():
         return jsonify(json.loads(inv.data))
     return jsonify(None)
 
+@socketio.on('connect')
+def handle_connect():
+    print(f'Client connected: {request.sid}')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    for room_code, room in list(rooms.items()):
+        for user_id in list(room['users'].keys()):
+            if room['users'][user_id]['sid'] == request.sid:
+                leave_room(room_code)
+                del room['users'][user_id]
+                emit('user_left', {'user_id': user_id}, room=room_code)
+                if len(room['users']) == 0:
+                    del rooms[room_code]
+                    if room_code in room_codes:
+                        del room_codes[room_code]
+                break
+
+@socketio.on('create_room')
+def handle_create_room(data):
+    user_id = session.get('user_id')
+    if not user_id:
+        emit('room_error', {'message': 'Не авторизован'})
+        return
+    
+    user = db.session.get(User, user_id)
+    if not user:
+        emit('room_error', {'message': 'Пользователь не найден'})
+        return
+    
+    room_code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=6))
+    rooms[room_code] = {
+        'host': user_id,
+        'users': {},
+        'current_track': None,
+        'is_playing': False,
+        'current_time': 0,
+        'playlist': []
+    }
+    
+    rooms[room_code]['users'][user_id] = {
+        'sid': request.sid,
+        'username': user.display_name or user.username,
+        'avatar': user.avatar_url
+    }
+    
+    room_codes[user_id] = room_code
+    join_room(room_code)
+    
+    emit('room_created', {
+        'room_code': room_code,
+        'room': rooms[room_code]
+    })
+
+@socketio.on('join_room')
+def handle_join_room(data):
+    user_id = session.get('user_id')
+    if not user_id:
+        emit('room_error', {'message': 'Не авторизован'})
+        return
+    
+    room_code = data.get('room_code', '').upper()
+    
+    if room_code not in rooms:
+        emit('room_error', {'message': 'Комната не найдена'})
+        return
+    
+    user = db.session.get(User, user_id)
+    if not user:
+        return
+    
+    rooms[room_code]['users'][user_id] = {
+        'sid': request.sid,
+        'username': user.display_name or user.username,
+        'avatar': user.avatar_url
+    }
+    
+    room_codes[user_id] = room_code
+    join_room(room_code)
+    
+    emit('room_joined', {
+        'room_code': room_code,
+        'room': rooms[room_code],
+        'users_list': [{'id': uid, **u} for uid, u in rooms[room_code]['users'].items()]
+    })
+    
+    emit('user_joined', {
+        'user_id': user_id,
+        'username': user.display_name or user.username,
+        'avatar': user.avatar_url
+    }, room=room_code, include_self=False)
+
+@socketio.on('leave_room')
+def handle_leave_room(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code in rooms:
+        if user_id in rooms[room_code]['users']:
+            del rooms[room_code]['users'][user_id]
+        
+        emit('user_left', {'user_id': user_id}, room=room_code)
+        
+        if len(rooms[room_code]['users']) == 0:
+            del rooms[room_code]
+        elif rooms[room_code]['host'] == user_id:
+            new_host = list(rooms[room_code]['users'].keys())[0]
+            rooms[room_code]['host'] = new_host
+            emit('host_changed', {'new_host': new_host}, room=room_code)
+    
+    leave_room(room_code)
+    del room_codes[user_id]
+    emit('room_left')
+
+@socketio.on('play_track')
+def handle_play_track(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code not in rooms:
+        return
+    
+    track = data.get('track')
+    current_time = data.get('current_time', 0)
+    
+    rooms[room_code]['current_track'] = track
+    rooms[room_code]['is_playing'] = True
+    rooms[room_code]['current_time'] = current_time
+    
+    emit('track_played', {
+        'track': track,
+        'current_time': current_time,
+        'user_id': user_id
+    }, room=room_code, include_self=False)
+
+@socketio.on('pause_track')
+def handle_pause_track(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code not in rooms:
+        return
+    
+    current_time = data.get('current_time', 0)
+    rooms[room_code]['is_playing'] = False
+    rooms[room_code]['current_time'] = current_time
+    
+    emit('track_paused', {
+        'current_time': current_time,
+        'user_id': user_id
+    }, room=room_code, include_self=False)
+
+@socketio.on('sync_time')
+def handle_sync_time(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code not in rooms:
+        return
+    
+    current_time = data.get('current_time', 0)
+    rooms[room_code]['current_time'] = current_time
+    
+    emit('time_synced', {
+        'current_time': current_time
+    }, room=room_code, include_self=False)
+
+@socketio.on('seek_sync')
+def handle_seek_sync(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code not in rooms:
+        return
+    
+    current_time = data.get('current_time', 0)
+    rooms[room_code]['current_time'] = current_time
+    
+    emit('seek_synced', {
+        'current_time': current_time
+    }, room=room_code, include_self=False)
+
+@socketio.on('add_to_room_playlist')
+def handle_add_to_playlist(data):
+    user_id = session.get('user_id')
+    if not user_id or user_id not in room_codes:
+        return
+    
+    room_code = room_codes[user_id]
+    if room_code not in rooms:
+        return
+    
+    track = data.get('track')
+    if track:
+        rooms[room_code]['playlist'].append(track)
+        emit('playlist_updated', {
+            'playlist': rooms[room_code]['playlist']
+        }, room=room_code)
+
+@app.route('/api/room/current')
+@login_required
+def get_current_room():
+    user_id = session['user_id']
+    if user_id in room_codes:
+        room_code = room_codes[user_id]
+        if room_code in rooms:
+            return jsonify({
+                'in_room': True,
+                'room_code': room_code,
+                'room': rooms[room_code]
+            })
+    return jsonify({'in_room': False})
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5001)

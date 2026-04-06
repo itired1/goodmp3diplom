@@ -121,3 +121,85 @@ window.logout = logout;
 window.escapeHtml = escapeHtml;
 window.toggleTheme = toggleTheme;
 window.applySavedTheme = applySavedTheme;
+
+window.openBannerSelector = async function() {
+    openModal('bannerSelectorModal');
+    
+    const container = document.getElementById('bannerSelectorList');
+    if (!container) return;
+    
+    try {
+        const inventory = await apiCall('shop/inventory');
+        const banners = (inventory || []).filter(item => item.data && item.data.type === 'banner');
+        
+        if (!banners.length) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: span 2; padding: 20px;">У вас нет баннеров. Купите их в магазине!</p>';
+            return;
+        }
+        
+        let html = '';
+        banners.forEach(function(item) {
+            const data = item.data || {};
+            const rarityColors = {
+                common: '#9ca3af',
+                rare: '#3b82f6',
+                epic: '#a855f7',
+                legendary: '#f59e0b'
+            };
+            const rarityColor = rarityColors[data.rarity] || '#9ca3af';
+            
+            html += '<div style="background: var(--bg-elevated); border: 2px solid ' + (item.equipped ? '#2ed573' : rarityColor) + '; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s;" ' +
+                'onclick="selectBanner(' + item.id + ', ' + item.equipped + ')" ' +
+                'onmouseover="this.style.transform=\'scale(1.02)\'" ' +
+                'onmouseout="this.style.transform=\'scale(1)\'">' +
+                '<img src="' + (data.image || '/static/shop/banners/xz.jpg') + '" style="width: 100%; height: 80px; object-fit: cover;" onerror="this.style.display=\'none\'">' +
+                '<div style="padding: 10px; text-align: center;">' +
+                '<h4 style="margin: 0 0 4px; font-size: 13px;">' + escapeHtml(data.name || 'Баннер') + '</h4>';
+            
+            if (item.equipped) {
+                html += '<span style="color: #2ed573; font-size: 11px;"><i class="fas fa-check-circle"></i> Установлен</span>';
+            } else {
+                html += '<span style="color: ' + rarityColor + '; font-size: 11px; text-transform: uppercase;">' + (data.rarity || '') + '</span>';
+            }
+            
+            html += '</div></div>';
+        });
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Load banners error:', error);
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); grid-column: span 2; padding: 20px;">Ошибка загрузки</p>';
+    }
+};
+
+window.selectBanner = async function(inventoryId, alreadyEquipped) {
+    if (alreadyEquipped) {
+        closeModal('bannerSelectorModal');
+        return;
+    }
+    
+    try {
+        const result = await apiCall('shop/equip/' + inventoryId, {
+            method: 'POST'
+        });
+        
+        if (result && result.success) {
+            showNotification('Баннер установлен!', 'success');
+            closeModal('bannerSelectorModal');
+            
+            const bannerImg = document.querySelector('.profile-banner');
+            if (bannerImg) {
+                const invItem = (await apiCall('shop/inventory') || []).find(i => i.id === inventoryId);
+                if (invItem && invItem.data && invItem.data.image) {
+                    bannerImg.style.backgroundImage = 'url(' + invItem.data.image + ')';
+                    bannerImg.style.backgroundSize = 'cover';
+                    bannerImg.style.backgroundPosition = 'center';
+                }
+            }
+        } else {
+            showNotification(result?.message || 'Ошибка установки', 'error');
+        }
+    } catch (error) {
+        showNotification('Ошибка установки баннера', 'error');
+    }
+};

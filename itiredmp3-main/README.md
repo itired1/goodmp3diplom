@@ -1,30 +1,41 @@
-# Music Player with VK and Yandex Music Integration
+# 🎧 iTired - Музыкальная платформа нового поколения
 
-[English version below](#english)
+Единая платформа для прослушивания музыки из Яндекс.Музыки и VK в одном месте.
 
-## 🎵 О проекте
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![Flask](https://img.shields.io/badge/Flask-2.3-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-Это веб-приложение для прослушивания музыки с интеграцией VK и Yandex Music. Проект предоставляет удобный интерфейс для управления вашими аудиозаписями из разных источников в одном месте.
+## ✨ Возможности
 
-### ✨ Особенности
-- Авторизация через VK и Yandex Music
-- Воспроизведение музыки из ваших аккаунтов
-- Современный и интуитивно понятный интерфейс
-- Адаптивный дизайн для различных устройств
+### Музыкальные источники
+- 🎵 **Яндекс.Музыка** — плейлисты, лайкнутые треки, рекомендации, чарты
+- 💬 **VK Музыка** — аудиозаписи, плейлисты ВКонтакте
+- 📁 **Локальные файлы** — ваша коллекция
 
-### 🛠 Технологии
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Backend**: Python
-- **Библиотеки**: 
-  - [vk_api](https://github.com/python273/vk_api) для работы с API VK
-  - [yandex-music-api](https://github.com/MarshalX/yandex-music-api) для работы с API Yandex Music
+### Функции
+- 🔍 **Умный поиск** по всем источникам одновременно
+- 📋 **Плейлисты** — создавайте и управляйте
+- ❤️ **Избранное** — сохраняйте любимые треки
+- 📜 **История** — никогда не теряйте треки
+- 👥 **Друзья** — делитесь музыкой
+- 🏪 **Магазин** — покупайте баннеры и темы
+- 🎁 **Подарки** — дарите предметы друзьям
+- 💰 **Система монет** — зарабатывайте за прослушивание
 
-## 📦 Установка и запуск
+### Социальные функции
+- Google OAuth авторизация
+- Уведомления о подарках и запросах в друзья
+- Совместные плейлисты
+
+## 🚀 Быстрый старт
+
+### Установка
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone <repo-url>
+cd itiredmp3-main
 ```
 
 2. Установите зависимости:
@@ -32,88 +43,165 @@ cd your-repo-name
 pip install -r requirements.txt
 ```
 
-3. Запустите приложение:
+3. Создайте файл `.env` (скопируйте из `.env.example`):
+```env
+SECRET_KEY=your-secret-key-here
+```
+
+4. Запустите приложение:
 ```bash
 python app.py
 ```
 
-4. Откройте браузер и перейдите по адресу `http://localhost:5001`
+5. Откройте в браузере: `http://localhost:5001`
 
-## ⚠️ Важная информация
+### Получение токенов
 
-Проект находится в стадии активной разработки. Все данные, включая тестовые почты и другую информацию, являются фиктивными и используются исключительно в демонстрационных целях.
+#### Яндекс.Музыка
+1. Установите расширение [Yandex Music Token](https://chromewebstore.google.com/detail/yandex-music-token/lcbjeookjibfhjjopieifgjnhlegmkib) для Chrome
+2. Перейдите на [music.yandex.ru](https://music.yandex.ru)
+3. Нажмите на иконку расширения и скопируйте токен
+4. Вставьте токен в настройках профиля
 
-## 🔮 Планы развития
+#### VK
+1. Перейдите на [vkhost.github.io](https://vkhost.github.io)
+2. Выберите "VK Audio"
+3. Разрешите доступ
+4. Скопируйте токен из URL (после `access_token=`)
+5. Вставьте токен в настройках профиля
 
-- [ ] Добавление поддержки Spotify API,Ssoundcloud
-- [ ] Разработка оффлайн-режима
-- [ ] Улучшение рекомендательной системы
-- [ ] Добавление социальных функций
+## 🌐 Запуск через ngrok (для Google OAuth)
 
-## 📄 Лицензия
+Если вы хотите использовать авторизацию через Google с другого домена:
 
-Этот проект распространяется под лицензией MIT. Подробнее см. в файле [LICENSE](LICENSE).
+1. Установите ngrok:
+```bash
+# Windows
+winget install ngrok
 
-## 🤝 Участие в разработке
+# или скачайте с https://ngrok.com/download
+```
 
-Любые предложения и помощь в разработке приветствуются! Не стесняйтесь создавать issues и pull requests.
+2. Запустите приложение:
+```bash
+python app.py
+```
+
+3. В новом терминале запустите ngrok:
+```bash
+ngrok http 5001
+```
+
+4. Скопируйте HTTPS URL (например: `https://abc123.ngrok-free.app`)
+
+5. В Google Cloud Console добавьте этот URL в **Authorized redirect URIs**:
+```
+https://abc123.ngrok-free.app/auth/google/callback
+```
+
+6. Обновите `.env`:
+```env
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=https://abc123.ngrok-free.app/auth/google/callback
+```
+
+7. Перезапустите приложение
+
+## 📁 Структура проекта
+
+```
+itiredmp3-main/
+├── app.py              # Основное Flask приложение
+├── models.py           # Модели базы данных
+├── utils.py            # Утилиты и API клиенты
+├── config.py          # Конфигурация
+├── requirements.txt    # Зависимости Python
+├── .env               # Переменные окружения (создать)
+├── .env.example       # Пример .env
+├── static/
+│   ├── css/           # Стили
+│   ├── js/            # JavaScript
+│   └── shop/          # Изображения магазина
+├── templates/
+│   ├── base.html      # Базовый шаблон
+│   ├── index.html     # Главная страница
+│   └── auth.html      # Страница авторизации
+└── landing/           # Лендинг
+    └── index.html
+```
+
+## 🛠 Технологии
+
+- **Backend**: Python, Flask, SQLAlchemy
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **База данных**: SQLite (по умолчанию)
+- **API**: Yandex Music API, VK API, Google OAuth
+
+### Зависимости
+```
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+Flask-Limiter==3.5.0
+Flask-Caching==2.1.0
+yandex-music==2.1.0
+vk-api==6.7.1
+bcrypt==4.0.1
+Pillow==10.0.0
+python-dotenv==1.0.0
+requests==2.31.0
+```
+
+## ⚙️ Конфигурация
+
+### Переменные окружения (.env)
+
+| Переменная | Описание | Обязательно |
+|------------|---------|-------------|
+| `SECRET_KEY` | Секретный ключ для сессий | ✅ |
+| `DATABASE_URL` | URL базы данных | По умолчанию SQLite |
+| `GOOGLE_CLIENT_ID` | OAuth Client ID | Для Google авторизации |
+| `GOOGLE_CLIENT_SECRET` | OAuth Client Secret | Для Google авторизации |
+| `GOOGLE_REDIRECT_URI` | Callback URL | Для Google авторизации |
+| `MAIL_USERNAME` | Email для отправки | Для верификации |
+| `MAIL_PASSWORD` | Пароль приложения | Для верификации |
+
+## 🎨 Дизайн
+
+Тёмная тема в стиле NoverPlay:
+- Фон: `#050505`
+- Акцент: `#6366f1` (индиго)
+- Стеклянный эффект (glassmorphism)
+- Адаптивный дизайн
+
+## 🔧 Разработка
+
+### Запуск в режиме разработки
+```bash
+python app.py
+# Debug mode включен автоматически
+```
+
+### Очистка базы данных
+```bash
+rm itired.db  # Удалить БД
+python app.py  # Создаст новую с админом
+```
+
+### Админ-доступ
+```
+Логин: admin
+Пароль: admin123
+```
+
+## 📝 Лицензия
+
+MIT License
+
+## 🤝 Автор
+
+**iTired** — Музыкальная платформа
 
 ---
 
-<a id="english"></a>
-# Music Player with VK and Yandex Music Integration
-
-## 🎵 About the Project
-
-This is a web application for listening to music with VK and Yandex Music integration. The project provides a convenient interface for managing your audio recordings from different sources in one place.
-
-### ✨ Features
-- Authorization via VK and Yandex Music
-- Music playback from your accounts
-- Modern and intuitive interface
-- Responsive design for various devices
-
-### 🛠 Technologies
-- **Frontend**: HTML5, CSS3, JavaScript
-- **Backend**: Python
-- **Libraries**: 
-  - [vk_api](https://github.com/python273/vk_api) for VK API integration
-  - [yandex-music-api](https://github.com/MarshalX/yandex-music-api) for Yandex Music API integration
-## 📦 Installation and Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Run the application:
-```bash
-python app.py
-```
-
-4. Open your browser and go to `http://localhost:5001`
-
-## ⚠️ Important Notice
-
-The project is under active development. All data, including test emails and other information, is fictional and used for demonstration purposes only.
-
-## 🔮 Future Plans
-
-- [ ] Adding Spotify API support,soundcloud
-- [ ] Developing an offline mode
-- [ ] Improving the recommendation system
-- [ ] Adding social features
-
-## 📄 License
-
-This project is distributed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## 🤝 Contributing
-
-Any suggestions and help in development are welcome! Feel free to create issues and pull requests.
+*Создано с ❤️*

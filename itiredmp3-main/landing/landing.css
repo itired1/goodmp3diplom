@@ -1,0 +1,1051 @@
+:root {
+    color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: #050505;
+    color: #ffffff;
+    font-family: "Syne", sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+body.cursor-enabled,
+body.cursor-enabled a,
+body.cursor-enabled button {
+    cursor: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+}
+
+img {
+    display: block;
+    width: 100%;
+}
+
+#particle-field {
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.noise {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size: 200px;
+}
+
+.cursor-dot,
+.cursor-ring,
+.custom-cursor {
+    position: fixed;
+    top: -100px;
+    left: -100px;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+}
+
+.cursor-dot,
+.custom-cursor {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6366f1;
+}
+
+.cursor-ring,
+.custom-cursor {
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 50%;
+    transition: width 0.28s ease, height 0.28s ease, border-color 0.28s ease, transform 0.1s ease;
+}
+
+.cursor-ring.is-active,
+.custom-cursor.hover {
+    width: 48px;
+    height: 48px;
+    border-color: rgba(99, 102, 241, 0.68);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.shell {
+    width: min(1100px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.section {
+    padding: 0 0 120px;
+}
+
+.site-nav {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: min(1100px, calc(100% - 48px));
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(5, 5, 5, 0.6);
+    backdrop-filter: blur(40px);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.site-nav.is-scrolled {
+    background: rgba(5, 5, 5, 0.86);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.brand-mark {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #6366f1;
+    flex-shrink: 0;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.nav-links a,
+.footer-links a {
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover,
+.footer-links a:hover {
+    color: #6366f1;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.nav-ghost,
+.nav-solid,
+.button-solid,
+.button-ghost,
+.preview-button,
+.platform-card {
+    border-radius: 14px;
+    transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.nav-ghost,
+.button-ghost,
+.preview-button,
+.platform-card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.nav-ghost,
+.nav-solid,
+.button-solid,
+.button-ghost {
+    min-height: 44px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.nav-solid,
+.button-solid,
+.platform-card.is-solid {
+    border: 1px solid #6366f1;
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.nav-ghost:hover,
+.nav-solid:hover,
+.button-solid:hover,
+.button-ghost:hover,
+.preview-button:hover,
+.platform-card:hover {
+    transform: translateY(-2px);
+}
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 132px 24px 88px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-badge,
+.community-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 16px 5px 8px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(99, 102, 241, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 30px;
+}
+
+.hero-badge-dot,
+.community-pill span {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hero-badge-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6366f1;
+    animation: blink 2s infinite;
+}
+
+.hero-title {
+    margin: 0 0 28px;
+    font-size: clamp(56px, 10vw, 108px);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.08em;
+}
+
+.hero-title span {
+    display: block;
+}
+
+.hero-title-muted {
+    color: rgba(255, 255, 255, 0.22);
+}
+
+.hero-slogan {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.hero-slogan span {
+    width: 40px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.hero-slogan strong,
+.eyebrow,
+.eyebrow-soft {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.hero-text {
+    max-width: 540px;
+    margin: 0 0 42px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: clamp(14px, 1.8vw, 17px);
+    line-height: 1.85;
+}
+
+.hero-actions,
+.banner-actions,
+.pledge-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.button-solid,
+.button-ghost {
+    min-height: 52px;
+    padding: 0 30px;
+    font-size: 14px;
+}
+
+.hero-panel-shell,
+.bento-card,
+.quote-card,
+.philosophy-card,
+.download-block,
+.pledge-banner,
+.bento-banner {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: rgba(8, 8, 8, 1);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1) inset, 0 60px 120px rgba(0, 0, 0, 0.75);
+}
+
+.hero-panel-shell,
+.bento-card,
+.quote-card,
+.philosophy-card {
+    --glow-x: 50%;
+    --glow-y: 50%;
+}
+
+.hero-panel-shell::before,
+.bento-card::before,
+.quote-card::before,
+.philosophy-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--glow-x) var(--glow-y), rgba(99, 102, 241, 0.08), transparent 58%);
+    pointer-events: none;
+}
+
+.hero-panel-shell {
+    width: min(920px, 100%);
+    margin-top: 64px;
+    border-radius: 24px;
+    text-align: left;
+}
+
+.hero-panel-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.window-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.window-dots span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.window-dots span:nth-child(1) {
+    background: #ff5f57;
+}
+
+.window-dots span:nth-child(2) {
+    background: #ffbd2e;
+}
+
+.window-dots span:nth-child(3) {
+    background: #28ca41;
+}
+
+.window-path {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.3);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+}
+
+.hero-panel-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+    min-height: 420px;
+}
+
+.hero-panel-preview {
+    position: relative;
+    min-height: 420px;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background: #080808;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.hero-panel-copy {
+    padding: 30px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.eyebrow-soft {
+    margin-bottom: 18px;
+}
+
+.hero-panel-copy h2,
+.section-head h2,
+.community-head h2,
+.download-copy h2 {
+    margin: 0 0 14px;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+}
+
+.hero-panel-copy p,
+.section-head p,
+.community-head p,
+.quote-card p,
+.philosophy-card p,
+.download-copy p,
+.bento-card p,
+.bento-banner p,
+.pledge-banner p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+.hero-panel-copy ul {
+    margin: 18px 0 0;
+    padding-left: 18px;
+    color: rgba(255, 255, 255, 0.55);
+    display: grid;
+    gap: 10px;
+}
+
+.hero-panel-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 18px 22px 22px;
+}
+
+.preview-button {
+    min-height: 52px;
+    cursor: pointer;
+}
+
+.preview-button.is-active {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(99, 102, 241, 0.15);
+    color: #ffffff;
+}
+
+.marquee {
+    position: relative;
+    overflow: hidden;
+    padding: 20px 0;
+    border-top: 1px solid rgba(99, 102, 241, 0.15);
+    border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.marquee-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.marquee-fade.left {
+    left: 0;
+    background: linear-gradient(to right, #050505, transparent);
+}
+
+.marquee-fade.right {
+    right: 0;
+    background: linear-gradient(to left, #050505, transparent);
+}
+
+.marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 30s linear infinite;
+}
+
+.marquee-item {
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 18px;
+    color: rgba(99, 102, 241, 0.7);
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 56px;
+    flex-wrap: wrap;
+}
+
+.section-head h2 span,
+.community-head h2 span,
+.download-copy h2 span {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.split p {
+    max-width: 280px;
+    text-align: right;
+}
+
+.center {
+    display: block;
+    text-align: center;
+}
+
+.center .eyebrow {
+    display: inline-block;
+    margin-bottom: 14px;
+}
+
+.bento-grid,
+.quote-grid,
+.philosophy-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.bento-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.bento-card {
+    grid-column: span 5;
+    border-radius: 24px;
+    transform-style: preserve-3d;
+}
+
+.bento-card.wide {
+    grid-column: span 7;
+}
+
+.bento-card.small {
+    grid-column: span 4;
+}
+
+.card-inner,
+.philosophy-card {
+    position: relative;
+    padding: 30px;
+}
+
+.card-icon,
+.platform-icon,
+.quote-avatar {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    font-size: 20px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.bento-card h3,
+.bento-banner h3,
+.pledge-banner h3,
+.philosophy-card h3 {
+    margin: 0 0 10px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.04;
+}
+
+.card-num {
+    position: absolute;
+    right: 20px;
+    bottom: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 44px;
+    color: rgba(99, 102, 241, 0.1);
+    line-height: 1;
+}
+
+.mini-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 60px;
+    margin-top: 26px;
+}
+
+.mini-bars span {
+    width: 6px;
+    display: block;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.18);
+}
+
+.mini-bars span:nth-child(-n + 6) {
+    background: rgba(99, 102, 241, 0.6);
+}
+
+.bento-banner,
+.pledge-banner {
+    grid-column: span 12;
+    border-radius: 28px;
+    padding: 34px 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.community-head {
+    text-align: center;
+    margin-bottom: 72px;
+}
+
+.community-pill {
+    margin-bottom: 26px;
+}
+
+.community-head h2 {
+    font-size: clamp(40px, 7vw, 80px);
+    letter-spacing: -0.07em;
+    line-height: 0.95;
+    margin-bottom: 20px;
+}
+
+.community-head p {
+    max-width: 520px;
+    margin: 0 auto;
+    font-size: 16px;
+}
+
+.quote-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 64px;
+}
+
+.quote-card {
+    border-radius: 22px;
+    padding: 28px;
+    transform-style: preserve-3d;
+}
+
+.quote-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.quote-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+.quote-name {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.quote-role {
+    font-size: 11px;
+    color: rgba(99, 102, 241, 0.6);
+}
+
+.quote-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.1);
+    color: rgba(99, 102, 241, 0.7);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.philosophy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.philosophy-card {
+    border-radius: 24px;
+    min-height: 320px;
+}
+
+.philosophy-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(99, 102, 241, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 22px;
+}
+
+.philosophy-card h3 {
+    font-size: 30px;
+}
+
+.philosophy-deco {
+    position: absolute;
+    right: -12px;
+    bottom: -20px;
+    font-size: 92px;
+    color: rgba(99, 102, 241, 0.05);
+    pointer-events: none;
+}
+
+.download-block {
+    border-radius: 32px;
+    padding: 54px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 44px;
+    flex-wrap: wrap;
+}
+
+.download-copy {
+    max-width: 460px;
+}
+
+.platform-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: min(360px, 100%);
+}
+
+.platform-card {
+    min-height: 72px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.platform-card .platform-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    margin-bottom: 0;
+    font-size: 16px;
+}
+
+.platform-label {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.platform-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.42);
+    margin-top: 2px;
+}
+
+.platform-card.is-solid .platform-sub {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer {
+    padding: 0 0 42px;
+    border-top: 1px solid rgba(99, 102, 241, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+
+.footer-brandline {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.footer-brandline p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 13px;
+}
+
+.reveal,
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.revealed,
+.revealed,
+[data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.32;
+    }
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 1120px) {
+    .hero-panel-body,
+    .quote-grid,
+    .philosophy-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bento-card,
+    .bento-card.wide,
+    .bento-card.small,
+    .bento-banner {
+        grid-column: span 12;
+    }
+
+    .hero-panel-preview {
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+}
+
+@media (max-width: 920px) {
+    .site-nav {
+        position: static;
+        transform: none;
+        width: min(1100px, calc(100% - 28px));
+        margin: 18px auto 0;
+        flex-wrap: wrap;
+    }
+
+    .nav-actions,
+    .nav-links {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .hero {
+        min-height: unset;
+        padding-top: 80px;
+    }
+
+    .download-block,
+    .bento-banner,
+    .pledge-banner,
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hero-panel-tabs {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .shell {
+        width: calc(100% - 28px);
+    }
+
+    .section {
+        padding-bottom: 88px;
+    }
+
+    .hero-title {
+        font-size: clamp(44px, 14vw, 72px);
+    }
+
+    .hero-slogan {
+        gap: 10px;
+    }
+
+    .hero-slogan span {
+        width: 26px;
+    }
+
+    .hero-panel-copy,
+    .card-inner,
+    .quote-card,
+    .philosophy-card,
+    .download-block,
+    .bento-banner,
+    .pledge-banner {
+        padding: 24px 20px;
+    }
+
+    .hero-panel-preview {
+        min-height: 260px;
+    }
+
+    .hero-panel-shell {
+        margin-top: 44px;
+    }
+
+    .section-head h2,
+    .download-copy h2 {
+        font-size: clamp(30px, 10vw, 46px);
+    }
+
+    .community-head h2 {
+        font-size: clamp(34px, 12vw, 58px);
+    }
+
+    .button-solid,
+    .button-ghost,
+    .nav-ghost,
+    .nav-solid {
+        width: 100%;
+    }
+
+    .hero-actions,
+    .banner-actions,
+    .pledge-actions,
+    .nav-actions {
+        align-items: stretch;
+    }
+
+    .platform-list {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .footer-links {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

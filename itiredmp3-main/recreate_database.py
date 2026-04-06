@@ -37,6 +37,7 @@ def create_sqlite_tables():
                 email TEXT UNIQUE,
                 password_hash TEXT NOT NULL,
                 yandex_token TEXT,
+                yandex_uid TEXT,
                 vk_token TEXT,
                 avatar_url TEXT,
                 bio TEXT,

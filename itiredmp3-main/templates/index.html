@@ -42,19 +42,16 @@
 
     <!-- МОЯ ВОЛНА -->
     <div class="glass-card" style="margin-bottom: 16px;">
-        <h3 style="margin-bottom: 16px;"><i class="fas fa-wave-square" style="color: var(--accent); margin-right: 8px;"></i>Моя волна</h3>
-        <div class="source-selector" id="waveSourceSelector" style="margin-bottom: 16px;">
-            <button type="button" class="source-btn active" data-source="yandex">
+        <h3 style="margin-bottom: 16px;"><i class="fas fa-heart" style="color: var(--accent); margin-right: 8px;"></i>Лайкнутые</h3>
+        <div class="source-selector" id="likedSourceSelector" style="margin-bottom: 16px;">
+            <button type="button" class="source-btn active" data-source="yandex" onclick="loadLikedTracks('yandex')">
                 <i class="fab fa-yandex"></i> Яндекс
             </button>
-            <button type="button" class="source-btn" data-source="vk">
+            <button type="button" class="source-btn" data-source="vk" onclick="loadLikedTracks('vk')">
                 <i class="fab fa-vk"></i> VK
             </button>
-            <button type="button" class="source-btn" data-source="all">
-                <i class="fas fa-globe"></i> Все
-            </button>
         </div>
-        <div class="wave-tracks" id="waveTracksContainer" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
+        <div class="wave-tracks" id="likedTracksContainer" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
             <div style="flex: 1; min-width: 200px; text-align: center; padding: 40px;">
                 <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
                 <p style="margin-top: 12px;">Загрузка...</p>
@@ -144,8 +141,11 @@
 <div id="profile" class="tab-content">
     <div class="grid-2col">
         <div class="glass-card">
-            <div class="profile-banner">
+            <div class="profile-banner" style="position: relative;">
                 <div class="banner-overlay"></div>
+                <button onclick="openBannerSelector()" class="glass-btn" style="position: absolute; top: 10px; right: 10px; padding: 6px 12px; font-size: 11px; background: rgba(0,0,0,0.6);">
+                    <i class="fas fa-image"></i> Установить баннер
+                </button>
             </div>
             <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: -32px; position: relative; z-index: 1;">
                 <div class="user-avatar" id="profileAvatar" style="width: 72px; height: 72px; font-size: 24px; border: 3px solid var(--bg-card); cursor: pointer;" onclick="triggerAvatarUpload()" title="Нажмите для смены аватарки">
@@ -404,6 +404,27 @@
             </div>
         </div>
         <button class="glass-btn" style="width: 100%;" onclick="closeModal('friendSearchModal')">Закрыть</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА ВЫБОРА БАННЕРА -->
+<div id="bannerSelectorModal" class="modal">
+    <div class="glass-card modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3><i class="fas fa-image"></i> Выбор баннера</h3>
+            <div class="modal-close" onclick="closeModal('bannerSelectorModal')">
+                <i class="fas fa-xmark"></i>
+            </div>
+        </div>
+        <div style="padding: 16px 0;">
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Выберите баннер из вашего инвентаря:</p>
+            <div id="bannerSelectorList" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                <p style="text-align: center; color: var(--text-muted); grid-column: span 2; padding: 20px;">
+                    <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                </p>
+            </div>
+        </div>
+        <button class="glass-btn" style="width: 100%;" onclick="closeModal('bannerSelectorModal')">Закрыть</button>
     </div>
 </div>
 

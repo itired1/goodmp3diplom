@@ -3,817 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iTired - Музыкальная платформа нового поколения</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #050505;
-            --bg-elevated: #0a0a0a;
-            --bg-card: #111111;
-            --accent: #6366f1;
-            --accent-hover: #818cf8;
-            --text: #ffffff;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --border: #27272a;
-            --gradient-1: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%);
-            --gradient-2: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.08) 0%, transparent 40%);
-            animation: bgMove 20s ease-in-out infinite;
-        }
-
-        @keyframes bgMove {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(2%, 2%) rotate(1deg); }
-            50% { transform: translate(0, 4%) rotate(0deg); }
-            75% { transform: translate(-2%, 2%) rotate(-1deg); }
-        }
-
-        /* Noise Overlay */
-        .noise {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            opacity: 0.03;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        /* Header */
-        header {
-            padding: 24px 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 24px;
-            font-weight: 800;
-            text-decoration: none;
-            color: var(--text);
-        }
-
-        .logo-icon {
-            width: 44px;
-            height: 44px;
-            background: var(--gradient-1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 32px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--text);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--gradient-1);
-            color: white;
-            box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-elevated);
-            border-color: var(--accent);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 120px 0 80px;
-        }
-
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 64px;
-            align-items: center;
-        }
-
-        .hero-text h1 {
-            font-size: 64px;
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 24px;
-            letter-spacing: -0.02em;
-        }
-
-        .hero-text h1 span {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-text p {
-            font-size: 20px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            max-width: 500px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .hero-visual {
-            position: relative;
-        }
-
-        .hero-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 32px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 200px;
-            background: var(--gradient-1);
-            opacity: 0.1;
-            border-radius: 24px 24px 0 0;
-        }
-
-        .player-preview {
-            background: var(--bg-elevated);
-            border-radius: 16px;
-            padding: 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .player-preview-header {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .player-cover {
-            width: 80px;
-            height: 80px;
-            background: var(--gradient-1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-        }
-
-        .player-info h3 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .player-info p {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .player-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .player-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .player-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .player-btn.play {
-            background: var(--gradient-1);
-            border: none;
-            width: 56px;
-            height: 56px;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            margin-top: 20px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            width: 45%;
-            background: var(--gradient-1);
-            border-radius: 2px;
-            animation: progressAnim 3s ease-in-out infinite;
-        }
-
-        @keyframes progressAnim {
-            0%, 100% { width: 25%; }
-            50% { width: 65%; }
-        }
-
-        /* Features Section */
-        .features {
-            padding: 100px 0;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 64px;
-        }
-
-        .section-header h2 {
-            font-size: 48px;
-            font-weight: 800;
-            margin-bottom: 16px;
-        }
-
-        .section-header p {
-            font-size: 18px;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
-            width: 56px;
-            height: 56px;
-            background: var(--bg-elevated);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--accent);
-        }
-
-        .feature-card h3 {
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* Sources Section */
-        .sources {
-            padding: 100px 0;
-            background: var(--bg-elevated);
-        }
-
-        .sources-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-
-        .source-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .source-card:hover {
-            border-color: var(--accent);
-            transform: scale(1.02);
-        }
-
-        .source-card i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .source-card h4 {
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-
-        .source-card p {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-
-        .source-yandex { color: #fc3f1d; }
-        .source-vk { color: #4a76a8; }
-        .source-spotify { color: #1db954; }
-        .source-apple { color: #fc3c00; }
-
-        /* CTA Section */
-        .cta {
-            padding: 120px 0;
-            text-align: center;
-        }
-
-        .cta-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 32px;
-            padding: 80px 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 300px;
-            background: var(--gradient-1);
-            opacity: 0.05;
-        }
-
-        .cta h2 {
-            font-size: 48px;
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        .cta p {
-            font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .cta .hero-buttons {
-            justify-content: center;
-            position: relative;
-        }
-
-        /* Footer */
-        footer {
-            padding: 40px 0;
-            border-top: 1px solid var(--border);
-            text-align: center;
-        }
-
-        footer p {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        /* Floating Elements */
-        .floating {
-            position: absolute;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .floating-1 {
-            top: 20%;
-            right: 10%;
-            font-size: 24px;
-            opacity: 0.3;
-        }
-
-        .floating-2 {
-            bottom: 30%;
-            left: 5%;
-            font-size: 20px;
-            opacity: 0.2;
-            animation-delay: -3s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .hero-text h1 {
-                font-size: 48px;
-            }
-
-            .hero-text p {
-                margin: 0 auto 40px;
-            }
-
-            .hero-buttons {
-                justify-content: center;
-            }
-
-            .hero-visual {
-                max-width: 500px;
-                margin: 0 auto;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .sources-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero-text h1 {
-                font-size: 36px;
-            }
-
-            .section-header h2 {
-                font-size: 32px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .sources-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .cta h2 {
-                font-size: 32px;
-            }
-        }
-    </style>
+    <title>iTired | Музыка без лишнего шума</title>
+    <meta name="description" content="iTired — веб-платформа для музыки. Яндекс.Музыка и VK в одном месте.">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%236366f1' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white'>🎧</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <div class="bg-animation"></div>
-    <div class="noise"></div>
+    <canvas id="particle-field" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
 
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <a href="#" class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-headphones"></i>
-                </div>
-                iTired
-            </a>
-            <nav class="nav-links">
-                <a href="#features">Возможности</a>
-                <a href="#sources">Источники</a>
-                <a href="#download">Скачать</a>
-            </nav>
-            <a href="#" class="btn btn-primary">
-                <i class="fas fa-rocket"></i>
-                Начать
-            </a>
+    <header class="site-nav" id="top">
+        <a class="brand" href="#top">
+            <span class="brand-mark">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+                </svg>
+            </span>
+            <span>iTired</span>
+        </a>
+
+        <nav aria-label="Основная навигация">
+            <ul class="nav-links">
+                <li><a href="#platform">Платформа</a></li>
+                <li><a href="#features">Возможности</a></li>
+                <li><a href="#sources">Источники</a></li>
+                <li><a href="#download">Скачать</a></li>
+            </ul>
+        </nav>
+
+        <div class="nav-actions">
+            <a class="nav-ghost" href="https://t.me/iTired" target="_blank" rel="noreferrer">Telegram</a>
+            <a class="nav-solid" href="/login">Начать</a>
         </div>
     </header>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Музыка без<br><span>границ</span></h1>
-                    <p>Единая платформа для всех музыкальных сервисов. Яндекс.Музыка, VK и другие — всё в одном месте с умными рекомендациями.</p>
-                    <div class="hero-buttons">
-                        <a href="#" class="btn btn-primary">
-                            <i class="fas fa-play"></i>
-                            Попробовать бесплатно
-                        </a>
-                        <a href="#" class="btn btn-secondary">
-                            <i class="fas fa-info-circle"></i>
-                            Узнать больше
-                        </a>
+    <main>
+        <section class="hero">
+            <div class="hero-badge" data-reveal>
+                <span class="hero-badge-dot"></span>
+                <span>Веб-платформа</span>
+            </div>
+
+            <h1 class="hero-title" data-reveal>
+                <span>Музыка</span>
+                <span class="hero-title-muted">без лишнего</span>
+                <span>шума.</span>
+            </h1>
+
+            <div class="hero-slogan" data-reveal>
+                <span></span>
+                <strong>From community, for community</strong>
+                <span></span>
+            </div>
+
+            <p class="hero-text" data-reveal>
+                iTired — веб-платформа, которая собирает Яндекс.Музыку и VK в одном месте.
+                Без лишних подписок, без фейкового размаха, с понятным интерфейсом и умными рекомендациями.
+            </p>
+
+            <div class="hero-actions" data-reveal>
+                <a class="button-solid" href="/login">Начать слушать</a>
+                <a class="button-ghost" href="https://t.me/iTired" target="_blank" rel="noreferrer">Telegram</a>
+            </div>
+
+            <div class="hero-panel-shell" data-reveal>
+                <div class="hero-panel-top">
+                    <div class="window-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="window-path">itired.app/dashboard</div>
+                </div>
+
+                <div class="hero-panel-body">
+                    <div class="hero-panel-preview">
+                        <img class="preview-image is-active" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'%3E%3Crect fill='%230a0a0a' width='800' height='500'/%3E%3Crect x='40' y='40' width='720' height='420' rx='16' fill='none' stroke='%236366f1' stroke-width='2'/%3E%3Ccircle cx='400' cy='220' r='80' fill='%236366f1'/%3E%3Ctext x='400' y='235' text-anchor='middle' fill='white' font-size='48'%3E🎧%3C/text%3E%3Crect x='300' y='340' width='200' height='8' rx='4' fill='%23333'/%3E%3Crect x='300' y='340' width='120' height='8' rx='4' fill='%236366f1'/%3E%3C/svg%3E" alt="Интерфейс iTired">
+                    </div>
+
+                    <div class="hero-panel-copy">
+                        <div class="eyebrow eyebrow-soft">Web</div>
+                        <h2 data-preview-title>Интерфейс без лишней обвязки</h2>
+                        <p data-preview-text>
+                            Главный экран остаётся собранным и не спорит с музыкой за внимание.
+                        </p>
+                        <ul data-preview-points>
+                            <li>Быстрый старт и понятная навигация.</li>
+                            <li>Фокус на контенте, а не на шуме.</li>
+                            <li>Весь опыт в одном браузере.</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="hero-visual">
-                    <i class="fas fa-music floating floating-1"></i>
-                    <i class="fas fa-headphones floating floating-2"></i>
-                    <div class="hero-card">
-                        <div class="player-preview">
-                            <div class="player-preview-header">
-                                <div class="player-cover">
-                                    <i class="fas fa-music"></i>
-                                </div>
-                                <div class="player-info">
-                                    <h3>Сейчас играет</h3>
-                                    <p>Imagine Dragons - Believer</p>
-                                </div>
-                            </div>
-                            <div class="player-controls">
-                                <button class="player-btn"><i class="fas fa-backward-step"></i></button>
-                                <button class="player-btn play"><i class="fas fa-play"></i></button>
-                                <button class="player-btn"><i class="fas fa-forward-step"></i></button>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill"></div>
-                            </div>
+            </div>
+        </section>
+
+        <section class="marquee">
+            <div class="marquee-fade left"></div>
+            <div class="marquee-fade right"></div>
+            <div class="marquee-track">
+                <div class="marquee-item">Яндекс.Музыка</div>
+                <div class="marquee-item">VK Music</div>
+                <div class="marquee-item">Плейлисты</div>
+                <div class="marquee-item">Избранное</div>
+                <div class="marquee-item">История</div>
+                <div class="marquee-item">Друзья</div>
+                <div class="marquee-item">Магазин</div>
+                <div class="marquee-item">Веб</div>
+                <div class="marquee-item">Яндекс.Музыка</div>
+                <div class="marquee-item">VK Music</div>
+                <div class="marquee-item">Плейлисты</div>
+                <div class="marquee-item">Избранное</div>
+                <div class="marquee-item">История</div>
+                <div class="marquee-item">Друзья</div>
+                <div class="marquee-item">Магазин</div>
+                <div class="marquee-item">Веб</div>
+            </div>
+        </section>
+
+        <section class="section shell" id="platform">
+            <div class="section-head split" data-reveal>
+                <div>
+                    <div class="eyebrow">Platform</div>
+                    <h2>Сделано иначе,<br><span>по делу.</span></h2>
+                </div>
+                <p>
+                    Веб-платформа для тех, кто хочет слушать музыку из разных источников без переключения между приложениями.
+                </p>
+            </div>
+
+            <div class="bento-grid">
+                <article class="bento-card wide" data-reveal>
+                    <div class="card-inner">
+                        <div class="card-icon">♫</div>
+                        <h3>Веб-first</h3>
+                        <p>
+                            Главный фокус — веб-опыт, который работает в любом браузере на любом устройстве. Никаких установок и обновлений.
+                        </p>
+                        <div class="mini-bars">
+                            <span style="height:22px"></span>
+                            <span style="height:38px"></span>
+                            <span style="height:28px"></span>
+                            <span style="height:50px"></span>
+                            <span style="height:34px"></span>
+                            <span style="height:44px"></span>
+                            <span style="height:20px"></span>
+                            <span style="height:56px"></span>
+                            <span style="height:32px"></span>
+                            <span style="height:46px"></span>
+                            <span style="height:24px"></span>
                         </div>
+                        <div class="card-num">01</div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                </article>
 
-    <!-- Features -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-header">
-                <h2>Возможности</h2>
-                <p>Всё что нужно для удобного прослушивания музыки</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-layer-group"></i>
+                <article class="bento-card" data-reveal>
+                    <div class="card-inner">
+                        <div class="card-icon">✉</div>
+                        <h3>Telegram</h3>
+                        <p>
+                            Внешняя коммуникация сведена к одной живой точке контакта. Без лишних площадок.
+                        </p>
+                        <div class="card-num">02</div>
                     </div>
-                    <h3>Единый интерфейс</h3>
-                    <p>Не нужно переключаться между приложениями. Все источники музыки в одном удобном плеере.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                    </div>
-                    <h3>Умные рекомендации</h3>
-                    <p>Персональные подборки на основе ваших предпочтений из всех подключённых сервисов.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-list-check"></i>
-                    </div>
-                    <h3>Плейлисты</h3>
-                    <p>Создавайте и управляйте плейлистами. Импортируйте из любых источников.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3>Избранное</h3>
-                    <p>Сохраняйте любимые треки. Лайк однажды — доступен везде.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock-rotate-left"></i>
-                    </div>
-                    <h3>История</h3>
-                    <p>Никогда не теряйте треки. Полная история прослушиваний всегда под рукой.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Друзья</h3>
-                    <p>Делитесь музыкой с друзьями. Следите за их музыкальными вкусами.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+                </article>
 
-    <!-- Sources -->
-    <section class="sources" id="sources">
-        <div class="container">
-            <div class="section-header">
-                <h2>Поддерживаемые источники</h2>
-                <p>Подключайте свои аккаунты и слушайте музыку из любого сервиса</p>
-            </div>
-            <div class="sources-grid">
-                <div class="source-card">
-                    <i class="fab fa-yandex source-yandex"></i>
-                    <h4>Яндекс.Музыка</h4>
-                    <p>Плейлисты, лайкнутые треки, рекомендации</p>
-                </div>
-                <div class="source-card">
-                    <i class="fab fa-vk source-vk"></i>
-                    <h4>VK Музыка</h4>
-                    <p>Аудиозаписи, плейлисты ВКонтакте</p>
-                </div>
-                <div class="source-card">
-                    <i class="fas fa-music source-spotify"></i>
-                    <h4>SoundCloud</h4>
-                    <p>Альтернативные треки, миксы</p>
-                </div>
-                <div class="source-card">
-                    <i class="fas fa-server source-apple"></i>
-                    <h4>Локальные файлы</h4>
-                    <p>Ваша коллекция на устройстве</p>
-                </div>
-            </div>
-        </div>
-    </section>
+                <article class="bento-card small" data-reveal>
+                    <div class="card-inner">
+                        <div class="card-icon">🎵</div>
+                        <h3>Яндекс.Музыка</h3>
+                        <p>Плейлисты, лайкнутые треки, рекомендации и чарты.</p>
+                        <div class="card-num">03</div>
+                    </div>
+                </article>
 
-    <!-- CTA -->
-    <section class="cta" id="download">
-        <div class="container">
-            <div class="cta-box">
-                <h2>Готов начать?</h2>
-                <p>Присоединяйтесь к тысячам пользователей iTired</p>
-                <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">
-                        <i class="fas fa-rocket"></i>
-                        Попробовать сейчас
+                <article class="bento-card small" data-reveal>
+                    <div class="card-inner">
+                        <div class="card-icon">💬</div>
+                        <h3>VK Music</h3>
+                        <p>Аудиозаписи и плейлисты ВКонтакте.</p>
+                        <div class="card-num">04</div>
+                    </div>
+                </article>
+
+                <article class="bento-card small" data-reveal>
+                    <div class="card-inner">
+                        <div class="card-icon">✦</div>
+                        <h3>Без подписок</h3>
+                        <p>Используй свои существующие подписки. Никаких новых платежей.</p>
+                        <div class="card-num">05</div>
+                    </div>
+                </article>
+
+                <div class="bento-banner" data-reveal>
+                    <div>
+                        <h3>Только то, что реально работает</h3>
+                        <p>Яндекс.Музыка, VK, плейлисты, избранное и умные рекомендации.</p>
+                    </div>
+                    <div class="banner-actions">
+                        <a class="button-solid" href="/login">Начать</a>
+                        <a class="button-ghost" href="https://t.me/iTired" target="_blank" rel="noreferrer">Telegram</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section shell" id="features">
+            <div class="section-head" data-reveal>
+                <div>
+                    <div class="eyebrow">Features</div>
+                    <h2>Возможности</h2>
+                </div>
+            </div>
+
+            <div class="philosophy-grid">
+                <article class="philosophy-card" data-reveal>
+                    <div class="philosophy-tag">Search</div>
+                    <h3>Умный<br>поиск.</h3>
+                    <p>Ищи музыку по всем источникам одновременно. Результаты из Яндекса и VK в одном списке.</p>
+                    <div class="philosophy-deco">◌</div>
+                </article>
+
+                <article class="philosophy-card" data-reveal>
+                    <div class="philosophy-tag">Playlists</div>
+                    <h3>Плейлисты<br>без границ.</h3>
+                    <p>Создавай плейлисты с треками из любых источников. Управляй одним интерфейсом.</p>
+                    <div class="philosophy-deco">▣</div>
+                </article>
+
+                <article class="philosophy-card" data-reveal>
+                    <div class="philosophy-tag">Social</div>
+                    <h3>Друзья и<br>сообщество.</h3>
+                    <p>Делись музыкой с друзьями. Следи за их музыкальными вкусами и получать уведомления.</p>
+                    <div class="philosophy-deco">∞</div>
+                </article>
+
+                <article class="philosophy-card" data-reveal>
+                    <div class="philosophy-tag">Shop</div>
+                    <h3>Магазин и<br>подарки.</h3>
+                    <p>Покупай баннеры, темы и подарки для друзей. Система монет за активность.</p>
+                    <div class="philosophy-deco">⬡</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section shell" id="sources">
+            <div class="community-head" data-reveal>
+                <div class="community-pill">
+                    <span>♥</span>
+                    <strong>Sources</strong>
+                </div>
+                <h2>Источники<br><span>музыки.</span></h2>
+                <p>
+                    Подключай свои аккаунты Яндекс.Музыки и VK. Используй существующие подписки без дополнительных платежей.
+                </p>
+            </div>
+
+            <div class="quote-grid">
+                <article class="quote-card" data-reveal>
+                    <div class="quote-head">
+                        <div class="quote-avatar">🎧</div>
+                        <div><div class="quote-name">Яндекс.Музыка</div><div class="quote-role">Основной источник</div></div>
+                    </div>
+                    <p>Плейлисты, лайкнутые треки, рекомендации, чарты, умная волна. Всё из твоего аккаунта.</p>
+                </article>
+
+                <article class="quote-card" data-reveal>
+                    <div class="quote-head">
+                        <div class="quote-avatar">💬</div>
+                        <div><div class="quote-name">VK Music</div><div class="quote-role">Дополнительный источник</div></div>
+                    </div>
+                    <p>Аудиозаписи, плейлисты и подборки ВКонтакте. Ещё больше музыки в одном месте.</p>
+                </article>
+
+                <article class="quote-card" data-reveal>
+                    <div class="quote-head">
+                        <div class="quote-avatar">📁</div>
+                        <div><div class="quote-name">Локальные файлы</div><div class="quote-role">Хранилище</div></div>
+                    </div>
+                    <p>Загружай свою коллекцию и создавай плейлисты из файлов. Музыка всегда с тобой.</p>
+                </article>
+            </div>
+
+            <div class="pledge-banner" data-reveal>
+                <div>
+                    <div class="eyebrow">Token-based</div>
+                    <h3>Безопасность твоих данных</h3>
+                    <p>
+                        Мы используем токены доступа, не логины и пароли. Твои данные принадлежат только тебе.
+                    </p>
+                </div>
+                <div class="pledge-actions">
+                    <a class="button-solid" href="/login">Попробовать</a>
+                    <a class="button-ghost" href="/register">Регистрация</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section shell" id="download">
+            <div class="download-block" data-reveal>
+                <div class="download-copy">
+                    <div class="eyebrow">Get iTired</div>
+                    <h2>Начни слушать<br><span>без лишнего.</span></h2>
+                    <p>
+                        Регистрация занимает минуту. Подключи Яндекс.Музыку и VK и слушай музыку из обоих источников.
+                    </p>
+                </div>
+
+                <div class="platform-list">
+                    <a class="platform-card is-solid" href="/login">
+                        <div class="platform-icon">🚀</div>
+                        <div><div class="platform-label">Войти</div><div class="platform-sub">Быстрый старт</div></div>
+                    </a>
+
+                    <a class="platform-card" href="/register">
+                        <div class="platform-icon">✍</div>
+                        <div><div class="platform-label">Регистрация</div><div class="platform-sub">Создать аккаунт</div></div>
+                    </a>
+
+                    <a class="platform-card" href="https://t.me/iTired" target="_blank" rel="noreferrer">
+                        <div class="platform-icon">✈</div>
+                        <div><div class="platform-label">Telegram</div><div class="platform-sub">основной канал связи</div></div>
                     </a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>© 2024 iTired. Создано с <i class="fas fa-heart" style="color: #ec4899;"></i></p>
+    <footer class="footer shell">
+        <div class="footer-brandline">
+            <a class="brand" href="#top">
+                <span class="brand-mark">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+                    </svg>
+                </span>
+                <span>iTired</span>
+            </a>
+            <p>From community, for community. Музыка без лишнего шума.</p>
+        </div>
+
+        <div class="footer-links">
+            <a href="https://t.me/iTired" target="_blank" rel="noreferrer">Telegram</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
         </div>
     </footer>
 
-    <script>
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-
-        // Header background on scroll
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.style.background = 'rgba(5, 5, 5, 0.95)';
-            } else {
-                header.style.background = 'rgba(5, 5, 5, 0.8)';
-            }
-        });
-
-        // Animate elements on scroll
-        const observerOptions = {
-            threshold: 0.1
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.feature-card, .source-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.6s ease';
-            observer.observe(el);
-        });
-    </script>
+    <script src="landing.js"></script>
 </body>
 </html>

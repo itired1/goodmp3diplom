@@ -919,14 +919,9 @@ body {
     color: #fff;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 1024px) {
-    .app-container {
-        grid-template-columns: 1fr;
-    }
-    .sidebar {
-        display: none;
-    }
+.gift-notification i {
+    font-size: 24px;
+}
     .player-glass {
         left: 16px;
         border-radius: var(--radius);
@@ -1709,4 +1704,65 @@ body {
 
 .gift-notification i {
     font-size: 24px;
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr !important;
+        padding-bottom: 180px;
+    }
+    
+    .sidebar {
+        display: none !important;
+    }
+    
+    .glass-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .search-box {
+        width: 100%;
+        order: 3;
+    }
+    
+    .content {
+        padding: 12px;
+    }
+    
+    .glass-card {
+        padding: 12px;
+    }
+    
+    .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .wave-tracks {
+        gap: 8px;
+    }
+    
+    .wave-track-card {
+        min-width: 130px !important;
+    }
+    
+    .player-glass {
+        padding: 10px 12px;
+    }
+    
+    .player-progress {
+        position: fixed;
+        bottom: 80px;
+        left: 0;
+        right: 0;
+    }
+    
+    .search-dropdown {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        max-height: 50vh;
+        width: auto !important;
+    }
 }
