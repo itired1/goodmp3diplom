@@ -1,0 +1,162 @@
+/* Главный контент (после сайдбара) */
+.main-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    padding-bottom: var(--player-height);
+    transition: margin-left 0.3s ease;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    position: sticky;
+    top: 0;
+    z-index: 80;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.search-box {
+    position: relative;
+    width: 300px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 16px 10px 38px;
+    background: var(--bg-tertiary);
+    border: var(--glass-border);
+    border-radius: 30px;
+    color: var(--text-primary);
+}
+
+.content {
+    padding: 30px;
+}
+
+.welcome-banner {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    border-radius: var(--border-radius);
+    padding: 30px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.welcome-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.playlist-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(4px);
+    border: var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.playlist-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+}
+
+.playlist-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-sm);
+    border: var(--glass-border);
+    margin-bottom: 8px;
+    transition: var(--transition);
+}
+
+.track-item:hover {
+    border-color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 0;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    .search-box {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .welcome-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

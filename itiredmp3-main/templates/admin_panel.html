@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Админ панель - iTired{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2>Админ панель</h2>
+        <a href="/" class="glass-btn">
+            <i class="fas fa-arrow-left"></i> На главную
+        </a>
+    </div>
+    
+    <div class="categories-nav" style="margin-bottom: 24px;">
+        <button class="cat-chip active" data-tab="stats">Статистика</button>
+        <button class="cat-chip" data-tab="shop">Магазин</button>
+        <button class="cat-chip" data-tab="currency">Валюта</button>
+    </div>
+
+    <div id="statsTab" class="tab-content active">
+        <div class="services-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="glass-card" style="text-align: center;">
+                <div class="card-icon" style="margin: 0 auto 12px;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Пользователи</h3>
+                <span class="stat-number" id="totalUsers">0</span>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div class="card-icon" style="margin: 0 auto 12px;">
+                    <i class="fas fa-receipt"></i>
+                </div>
+                <h3>Транзакции</h3>
+                <span class="stat-number" id="totalTransactions">0</span>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <div class="card-icon" style="margin: 0 auto 12px;">
+                    <i class="fas fa-box"></i>
+                </div>
+                <h3>Товары</h3>
+                <span class="stat-number" id="totalItems">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="shopTab" class="tab-content">
+        <h3 style="margin-bottom: 16px;">Добавить товар</h3>
+        <form id="addItemForm" class="glass-card" style="margin-bottom: 24px;">
+            <div class="form-group">
+                <label>Название</label>
+                <input type="text" id="itemName" required>
+            </div>
+            <div class="form-group">
+                <label>Тип</label>
+                <select id="itemType">
+                    <option value="theme">Тема</option>
+                    <option value="avatar">Аватар</option>
+                    <option value="profile_banner">Баннер</option>
+                    <option value="badge">Бейдж</option>
+                    <option value="effect">Эффект</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Категория</label>
+                <select id="itemCategory">
+                    <option value="themes">Темы</option>
+                    <option value="avatars">Аватары</option>
+                    <option value="banners">Баннеры</option>
+                    <option value="badges">Бейджи</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Цена</label>
+                <input type="number" id="itemPrice" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Редкость</label>
+                <select id="itemRarity">
+                    <option value="common">Обычный</option>
+                    <option value="rare">Редкий</option>
+                    <option value="epic">Эпический</option>
+                    <option value="legendary">Легендарный</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
+        </form>
+    </div>
+
+    <div id="currencyTab" class="tab-content">
+        <h3 style="margin-bottom: 16px;">Выдать валюту</h3>
+        <form id="addCurrencyForm" class="glass-card">
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" id="currencyUsername" required>
+            </div>
+            <div class="form-group">
+                <label>Количество монет</label>
+                <input type="number" id="currencyAmount" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>Причина</label>
+                <input type="text" id="currencyReason" placeholder="Бонус">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-gift"></i> Выдать
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.cat-chip[data-tab]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.cat-chip[data-tab]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab + 'Tab').classList.add('active');
+    });
+});
+
+async function loadAdminStats() {
+    try {
+        const data = await apiCall('admin/stats');
+        document.getElementById('totalUsers').textContent = data.total_users || 0;
+        document.getElementById('totalTransactions').textContent = data.total_transactions || 0;
+        document.getElementById('totalItems').textContent = data.total_items || 0;
+    } catch (error) {
+        console.error('Load stats error:', error);
+    }
+}
+
+document.getElementById('addCurrencyForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('currencyUsername').value;
+    const amount = parseInt(document.getElementById('currencyAmount').value);
+    const reason = document.getElementById('currencyReason').value || 'admin_grant';
+    
+    try {
+        const result = await apiCall('admin/add_currency', {
+            method: 'POST',
+            body: JSON.stringify({ username, amount, reason })
+        });
+        if (result.success) {
+            showNotification(result.message, 'success');
+            this.reset();
+        }
+    } catch (error) {
+        showNotification('Ошибка', 'error');
+    }
+});
+
+loadAdminStats();
+</script>
+{% endblock %}

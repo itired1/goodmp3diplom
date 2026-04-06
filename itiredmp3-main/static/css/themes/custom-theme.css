@@ -1,0 +1,11 @@
+/* Для динамических кастомных тем (будут перезаписываться через JS) */
+.custom-theme {
+    transition: all 0.3s ease;
+}
+/* Пример применения кастомной темы через атрибут data-custom-theme */
+[data-custom-theme] {
+    --bg-primary: var(--custom-bg-primary, #0B0C10);
+    --bg-secondary: var(--custom-bg-secondary, #1F2833);
+    --accent: var(--custom-accent, #FF416C);
+    /* и так далее */
+}

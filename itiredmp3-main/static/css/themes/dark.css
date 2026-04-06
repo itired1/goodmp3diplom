@@ -1,0 +1,12 @@
+/* Базовая тёмная тема (уже определена в variables.css, но для явности) */
+[data-theme="dark"] {
+    --bg-primary: #0B0C10;
+    --bg-secondary: #1F2833;
+    --bg-tertiary: #252A34;
+    --bg-card: rgba(37, 42, 52, 0.8);
+    --text-primary: #E5E7EB;
+    --text-secondary: #9CA3AF;
+    --accent-start: #FF416C;
+    --accent-end: #FF4B2B;
+    --success: #00F5D4;
+}

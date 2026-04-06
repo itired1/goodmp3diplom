@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}iTired - Музыкальная платформа{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/main.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div id="notificationContainer" class="notification-container"></div>
+
+    {% block sidebar %}
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <span>iTired</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </div>
+                <div class="nav-item" data-tab="favorites">
+                    <i class="fas fa-heart"></i>
+                    <span>Избранное</span>
+                </div>
+                <div class="nav-item" data-tab="history">
+                    <i class="fas fa-history"></i>
+                    <span>История</span>
+                </div>
+                <div class="nav-item" data-tab="playlists">
+                    <i class="fas fa-list"></i>
+                    <span>Плейлисты</span>
+                </div>
+                <div class="nav-item" data-tab="shop">
+                    <i class="fas fa-store"></i>
+                    <span>Магазин</span>
+                    <span id="coinBadge" class="coin-badge"></span>
+                </div>
+                <div class="nav-item" data-tab="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </div>
+                <div class="nav-item" onclick="openModal('notificationsModal')">
+                    <i class="fas fa-bell"></i>
+                    <span>Уведомления</span>
+                    <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="sidebarAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <div class="username" id="sidebarUsername">...</div>
+                        <div class="user-status">
+                            <span class="online-dot"></span>
+                            online
+                        </div>
+                    </div>
+                    <i class="fas fa-sign-out-alt logout-btn" onclick="logout()"></i>
+                </div>
+            </div>
+        </aside>
+    {% endblock %}
+
+        <main class="main-content">
+            <header class="glass-header">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Поиск...">
+                </div>
+                <div class="header-actions">
+                    <div class="header-balance">
+                        <i class="fas fa-coins"></i>
+                        <span id="headerBalance">0</span>
+                    </div>
+                    <div class="header-user">
+                        <div class="user-avatar" id="headerUserAvatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span id="headerUsername">...</span>
+                    </div>
+                    <button class="glass-btn theme-toggle" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button class="glass-btn" onclick="openModal('queueModal')">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="glass-btn" onclick="openModal('settingsModal')">
+                        <i class="fas fa-gear"></i>
+                    </button>
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block player %}
+    <div class="player-glass">
+        <div class="player-info">
+            <div class="player-cover" id="playerCover">
+                <i class="fas fa-music"></i>
+            </div>
+            <div>
+                <div class="track-title" id="currentTrack">Нет трека</div>
+                <div class="track-artist" id="currentArtist">-</div>
+            </div>
+        </div>
+        <div class="player-controls">
+            <button class="control-btn" id="prevBtn">
+                <i class="fas fa-backward-step"></i>
+            </button>
+            <button class="control-btn play-btn" id="playPauseBtn">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="control-btn" id="nextBtn">
+                <i class="fas fa-forward-step"></i>
+            </button>
+        </div>
+        <div class="player-progress">
+            <span class="time-display" id="currentTime">0:00</span>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="time-display" id="totalTime">0:00</span>
+        </div>
+        <button id="playerLikeBtn" class="player-like-btn" onclick="togglePlayerLike()">
+            <i class="far fa-heart"></i>
+        </button>
+        <div class="player-volume">
+            <i class="fas fa-volume-up"></i>
+            <input type="range" id="volumeSlider" min="0" max="100" value="70">
+        </div>
+    </div>
+    {% endblock %}
+
+    <!-- УВЕДОМЛЕНИЯ -->
+    <div id="notificationsModal" class="modal">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>Уведомления</h3>
+                <div class="modal-close" onclick="closeModal('notificationsModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <div id="notificationsList" class="users-list">
+                <div class="queue-placeholder">
+                    <i class="fas fa-bell"></i>
+                    <p>Нет уведомлений</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОЧЕРЕДЬ -->
+    <div id="queueModal" class="modal">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>Очередь</h3>
+                <div class="modal-close" onclick="closeModal('queueModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <div id="queueContainer" class="queue-placeholder">
+                <i class="fas fa-list"></i>
+                <p>Очередь пуста</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- НАСТРОЙКИ -->
+    <div id="settingsModal" class="modal">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>Настройки</h3>
+                <div class="modal-close" onclick="closeModal('settingsModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label>Тема</label>
+                    <select id="themeSelect">
+                        <option value="dark">Тёмная</option>
+                        <option value="light">Светлая</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Музыкальный сервис</label>
+                    <select id="musicService">
+                        <option value="yandex">Яндекс.Музыка</option>
+                        <option value="vk">VK Музыка</option>
+                        <option value="soundcloud">SoundCloud</option>
+                        <option value="all">Все сервисы</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Сохранить
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ -->
+    <div id="userProfileModal" class="modal">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>Профиль</h3>
+                <div class="modal-close" onclick="closeModal('userProfileModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <div class="profile-modal-header">
+                <img id="modalAvatar" src="" alt="" class="profile-modal-avatar">
+                <div class="profile-modal-info">
+                    <h3 id="modalDisplayName"></h3>
+                    <p id="modalUsername" class="profile-username"></p>
+                </div>
+            </div>
+            <p id="modalBio" class="profile-bio"></p>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span id="modalFriendsCount" class="stat-number">0</span>
+                    <span class="stat-label">друзей</span>
+                </div>
+                <div class="stat-item">
+                    <span id="modalTracksCount" class="stat-number">0</span>
+                    <span class="stat-label">треков</span>
+                </div>
+                <div class="stat-item">
+                    <span id="modalPlaylistsCount" class="stat-number">0</span>
+                    <span class="stat-label">плейлистов</span>
+                </div>
+            </div>
+            <div class="taste-match">
+                <div class="taste-match-label">Совпадение: <span id="modalTasteMatch">0</span>%</div>
+                <div class="taste-match-bar">
+                    <div id="modalTasteFill" class="taste-match-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+            <button id="modalAddFriendBtn" class="btn-primary btn-full">
+                Добавить в друзья
+            </button>
+        </div>
+    </div>
+
+    <!-- СОЗДАНИЕ ПЛЕЙЛИСТА -->
+    <div id="createPlaylistModal" class="modal">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3>Новый плейлист</h3>
+                <div class="modal-close" onclick="closeModal('createPlaylistModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <form id="createPlaylistForm">
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="playlistName" placeholder="Мой плейлист" required>
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="playlistDescription" rows="2" placeholder="Описание..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Создать
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ПРЕДМЕТА МАГАЗИНА -->
+    <div id="shopItemModal" class="modal">
+        <div class="glass-card modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Предмет</h3>
+                <div class="modal-close" onclick="closeModal('shopItemModal')">
+                    <i class="fas fa-xmark"></i>
+                </div>
+            </div>
+            <div id="shopItemPreview" style="width: 100%; height: 180px; border-radius: 12px; margin-bottom: 16px; overflow: hidden; background: var(--bg-elevated);"></div>
+            <h4 id="shopItemName" style="margin-bottom: 8px;"></h4>
+            <p id="shopItemRarity" style="color: var(--text-muted); text-transform: uppercase; font-size: 12px; margin-bottom: 16px;"></p>
+            <p id="shopItemPrice" style="font-size: 20px; font-weight: 600; color: var(--accent); margin-bottom: 16px;"></p>
+            <div style="display: flex; gap: 8px;">
+                <button id="shopItemBuyBtn" class="btn-primary" style="flex: 1;">
+                    <i class="fas fa-shopping-cart"></i> Купить
+                </button>
+                <button class="glass-btn" onclick="giftItem(document.querySelector('#shopItemModal').dataset.itemId)" style="flex: 1;">
+                    <i class="fas fa-gift"></i> Подарить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" hidden></audio>
+
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/player.js"></script>
+    <script src="/static/js/friends.js"></script>
+    <script src="/static/js/profile.js"></script>
+    <script src="/static/js/playlists.js"></script>
+    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/shop.js"></script>
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

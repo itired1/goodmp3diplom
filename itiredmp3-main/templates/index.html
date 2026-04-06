@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+        <div class="loading-logo">
+            <div class="logo-icon">
+                <i class="fas fa-headphones"></i>
+            </div>
+            <span>iTired</span>
+        </div>
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p>Загрузка...</p>
+    </div>
+</div>
+<!-- ГЛАВНАЯ -->
+<div id="dashboard" class="tab-content active">
+    <div class="glass-card" style="margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h2>Добро пожаловать, <span id="userName">Друг</span></h2>
+                <p style="color: var(--text-muted); margin-top: 4px;">Что будем слушать?</p>
+            </div>
+            <button class="glass-btn" onclick="loadDashboard()">
+                <i class="fas fa-rotate-right"></i> Обновить
+            </button>
+        </div>
+        <div style="display: flex; gap: 32px; margin-top: 20px;">
+            <div>
+                <span class="stat-number" id="welcomeTracks">0</span>
+                <span class="stat-label"> треков</span>
+            </div>
+            <div>
+                <span class="stat-number" id="welcomePlaylists">0</span>
+                <span class="stat-label"> плейлистов</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОЯ ВОЛНА -->
+    <div class="glass-card" style="margin-bottom: 16px;">
+        <h3 style="margin-bottom: 16px;"><i class="fas fa-wave-square" style="color: var(--accent); margin-right: 8px;"></i>Моя волна</h3>
+        <div class="source-selector" id="waveSourceSelector" style="margin-bottom: 16px;">
+            <button type="button" class="source-btn active" data-source="yandex">
+                <i class="fab fa-yandex"></i> Яндекс
+            </button>
+            <button type="button" class="source-btn" data-source="vk">
+                <i class="fab fa-vk"></i> VK
+            </button>
+            <button type="button" class="source-btn" data-source="all">
+                <i class="fas fa-globe"></i> Все
+            </button>
+        </div>
+        <div class="wave-tracks" id="waveTracksContainer" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
+            <div style="flex: 1; min-width: 200px; text-align: center; padding: 40px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                <p style="margin-top: 12px;">Загрузка...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3 style="margin-bottom: 16px;"><i class="fas fa-fire" style="color: #ff6b6b; margin-right: 8px;"></i>Популярное</h3>
+        <div class="services-grid" id="recommendationsGrid">
+            <div class="glass-card skeleton skeleton-card"></div>
+            <div class="glass-card skeleton skeleton-card"></div>
+            <div class="glass-card skeleton skeleton-card"></div>
+            <div class="glass-card skeleton skeleton-card"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ИЗБРАННОЕ -->
+<div id="favorites" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3><i class="fas fa-heart" style="color: var(--accent);"></i> Избранное</h3>
+        </div>
+        <div class="users-list" id="favoritesList">
+            <div class="queue-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ИСТОРИЯ -->
+<div id="history" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3><i class="fas fa-history"></i> История прослушиваний</h3>
+            <button class="glass-btn" onclick="clearHistory()">
+                <i class="fas fa-trash"></i> Очистить
+            </button>
+        </div>
+        <div class="users-list" id="historyList">
+            <div class="queue-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ПЛЕЙЛИСТЫ -->
+<div id="playlists" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Мои плейлисты</h3>
+            <button class="btn-primary" onclick="openModal('createPlaylistModal')">
+                <i class="fas fa-plus"></i> Создать
+            </button>
+        </div>
+        <div class="services-grid" id="playlistsGrid">
+            <div class="glass-card skeleton skeleton-card"></div>
+            <div class="glass-card skeleton skeleton-card"></div>
+            <div class="glass-card skeleton skeleton-card"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ДЕТАЛИ ПЛЕЙЛИСТА -->
+<div id="playlistDetail" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button class="glass-btn" onclick="switchTab('playlists'); loadPlaylists();">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+        <div id="playlistTracks" class="users-list">
+            <div class="queue-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ПРОФИЛЬ -->
+<div id="profile" class="tab-content">
+    <div class="grid-2col">
+        <div class="glass-card">
+            <div class="profile-banner">
+                <div class="banner-overlay"></div>
+            </div>
+            <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-top: -32px; position: relative; z-index: 1;">
+                <div class="user-avatar" id="profileAvatar" style="width: 72px; height: 72px; font-size: 24px; border: 3px solid var(--bg-card); cursor: pointer;" onclick="triggerAvatarUpload()" title="Нажмите для смены аватарки">
+                    <i class="fas fa-user"></i>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                <div>
+                    <h2 id="profileDisplayName" style="margin-bottom: 2px;">Загрузка...</h2>
+                    <p id="profileUsername" style="color: var(--text-muted); font-size: 13px;">@username</p>
+                    <p id="joinDate" style="color: var(--text-muted); font-size: 12px;"></p>
+                    <button type="button" class="glass-btn" style="padding: 4px 8px; font-size: 11px; margin-top: 4px;" onclick="triggerAvatarUpload()">
+                        <i class="fas fa-camera"></i> Сменить аватарку
+                    </button>
+                </div>
+            </div>
+            <form id="profileForm" style="margin-top: 24px;">
+                <div class="form-group">
+                    <label>Отображаемое имя</label>
+                    <input type="text" id="display_name" placeholder="Ваше имя">
+                </div>
+                <div class="form-group">
+                    <label>О себе</label>
+                    <textarea id="bio" rows="2" placeholder="Расскажите о себе..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fab fa-yandex"></i> Токен Яндекс.Музыки
+                            <i id="yandexCheck" class="fas fa-check" style="color: #2ed573; display: none;"></i>
+                        </span>
+                        <button type="button" class="glass-btn" style="padding: 4px 8px; font-size: 11px;" onclick="openModal('yandexTokenModal')">
+                            <i class="fas fa-question-circle"></i> Как получить
+                        </button>
+                    </label>
+                    <input type="password" id="yandex_token" placeholder="Вставьте токен">
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fab fa-vk"></i> Токен VK
+                            <i id="vkCheck" class="fas fa-check" style="color: #2ed573; display: none;"></i>
+                        </span>
+                        <button type="button" class="glass-btn" style="padding: 4px 8px; font-size: 11px;" onclick="openModal('vkTokenModal')">
+                            <i class="fas fa-question-circle"></i> Как получить
+                        </button>
+                    </label>
+                    <input type="password" id="vk_token" placeholder="Вставьте токен">
+                </div>
+                <div class="form-group">
+                    <label>Моя волна</label>
+                    <div class="source-selector">
+                        <button type="button" class="source-btn active" data-source="yandex">
+                            <i class="fab fa-yandex"></i> Яндекс
+                        </button>
+                        <button type="button" class="source-btn" data-source="vk">
+                            <i class="fab fa-vk"></i> VK
+                        </button>
+                        <button type="button" class="source-btn" data-source="all">
+                            <i class="fas fa-globe"></i> Все
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Сохранить изменения
+                </button>
+            </form>
+        </div>
+        <div class="glass-card">
+            <h3 style="margin-bottom: 16px;">
+                Друзья <span id="friendsCount" style="color: var(--text-muted); font-weight: 400;">(0)</span>
+            </h3>
+            <div id="friendsList" class="users-list">
+                <div class="queue-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Загрузка...</p>
+                </div>
+            </div>
+            <button class="glass-btn" style="width: 100%; margin-top: 16px;" onclick="findMusicFriends()">
+                <i class="fas fa-user-plus"></i> Найти друзей
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- УВЕДОМЛЕНИЯ -->
+<div id="notifications" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>Уведомления</h3>
+            <button class="glass-btn" onclick="markAllAsRead()">
+                <i class="fas fa-check-double"></i> Прочитать все
+            </button>
+        </div>
+        <div id="notificationsPage" class="users-list">
+            <div class="queue-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Загрузка...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- МАГАЗИН -->
+<div id="shop" class="tab-content">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h3><i class="fas fa-store"></i> Магазин</h3>
+            <div class="header-balance" style="background: var(--bg-elevated); padding: 8px 16px; border-radius: 20px;">
+                <i class="fas fa-coins" style="color: var(--accent);"></i>
+                <span id="userBalance">0</span> монет
+            </div>
+        </div>
+        <div class="categories-nav" style="margin: 16px 0;">
+            <button class="cat-chip active" data-category="all">Все</button>
+            <button class="cat-chip" data-category="banner">Баннеры</button>
+            <button class="cat-chip" data-category="inventory">Мои предметы</button>
+        </div>
+        <div id="shopItemsList" class="services-grid"></div>
+        <div id="inventoryList" style="display: none; margin-top: 24px;">
+            <h4 style="margin-bottom: 12px;"><i class="fas fa-box"></i> Мои купленные предметы</h4>
+            <div id="inventoryItems"></div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛКА ТОКЕНА ЯНДЕКС -->
+<div id="yandexTokenModal" class="modal">
+    <div class="glass-card modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3><i class="fab fa-yandex" style="color: #fc3f1d;"></i> Яндекс.Музыка - Получение токена</h3>
+            <div class="modal-close" onclick="closeModal('yandexTokenModal')">
+                <i class="fas fa-xmark"></i>
+            </div>
+        </div>
+        <div style="padding: 8px 0;">
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Способ 1: Расширение для браузера</h4>
+            <ol style="margin-left: 20px; margin-bottom: 20px; line-height: 1.8;">
+                <li>Установите расширение <a href="https://chromewebstore.google.com/detail/yandex-music-token/lcbjeookjibfhjjopieifgjnhlegmkib" target="_blank" style="color: var(--accent);">Yandex Music Token</a> для Chrome</li>
+                <li>Перейдите на сайт <a href="https://music.yandex.ru" target="_blank" style="color: var(--accent);">music.yandex.ru</a></li>
+                <li>Нажмите на иконку расширения в браузере</li>
+                <li>Скопируйте полученный токен</li>
+                <li>Вставьте токен в поле выше</li>
+            </ol>
+            
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Как работает</h4>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Токен позволяет приложению получать доступ к вашей библиотеке Яндекс.Музыки: плейлистам, лайкнутым трекам и рекомендациям.
+            </p>
+        </div>
+        <button class="btn-primary" style="width: 100%;" onclick="closeModal('yandexTokenModal')">Понятно</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА ТОКЕНА ВК -->
+<div id="vkTokenModal" class="modal">
+    <div class="glass-card modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3><i class="fab fa-vk" style="color: #4a76a8;"></i> VK - Получение токена</h3>
+            <div class="modal-close" onclick="closeModal('vkTokenModal')">
+                <i class="fas fa-xmark"></i>
+            </div>
+        </div>
+        <div style="padding: 8px 0;">
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Получение токена</h4>
+            <ol style="margin-left: 20px; margin-bottom: 20px; line-height: 1.8;">
+                <li>Перейдите на сайт <a href="https://vkhost.github.io" target="_blank" style="color: var(--accent);">vkhost.github.io</a></li>
+                <li>Выберите "VK Audio" или "Kate Mobile"</li>
+                <li>Нажмите "Разрешить"</li>
+                <li>Скопируйте ссылку из адресной строки</li>
+                <li>Токен находится в URL после <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">access_token=</code></li>
+            </ol>
+            
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Альтернативный способ</h4>
+            <ol style="margin-left: 20px; margin-bottom: 20px; line-height: 1.8;">
+                <li>Откройте <a href="https://vkhost.github.io" target="_blank" style="color: var(--accent);">vkhost.github.io</a></li>
+                <li>Нажмите F12 (DevTools)</li>
+                <li>Перейдите во вкладку Network (Сеть)</li>
+                <li>Выберите приложение Kate Mobile</li>
+                <li>Найдите запрос с <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">access_token</code></li>
+            </ol>
+            
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Важно</h4>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Токен даёт доступ к вашей музыке ВКонтакте. Не передавайте токен третьим лицам.
+            </p>
+        </div>
+        <button class="btn-primary" style="width: 100%;" onclick="closeModal('vkTokenModal')">Понятно</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА ТОКЕНА SOUNDCLOUD -->
+<div id="soundcloudTokenModal" class="modal">
+    <div class="glass-card modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3><i class="fab fa-soundcloud" style="color: #ff5500;"></i> SoundCloud - Получение токена</h3>
+            <div class="modal-close" onclick="closeModal('soundcloudTokenModal')">
+                <i class="fas fa-xmark"></i>
+            </div>
+        </div>
+        <div style="padding: 8px 0;">
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Инструкция</h4>
+            <ol style="margin-left: 20px; margin-bottom: 16px; line-height: 1.8;">
+                <li>Откройте <a href="https://soundcloud.com/discover" target="_blank" style="color: var(--accent);">SoundCloud Discover</a></li>
+                <li>Нажмите F12 или Ctrl+Shift+I для открытия DevTools</li>
+                <li>Перейдите во вкладку <strong>Network</strong> (Сеть)</li>
+                <li>В поле фильтра введите <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">client_id</code></li>
+                <li>Обновите страницу (F5)</li>
+                <li>Найдите запрос к API SoundCloud</li>
+                <li>В ответе найдите <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">client_id</code></li>
+            </ol>
+            
+            <h4 style="color: var(--accent); margin-bottom: 12px;">Авторизация (опционально)</h4>
+            <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+                Для доступа к личной библиотеке:
+            </p>
+            <ol style="margin-left: 20px; margin-bottom: 16px; line-height: 1.8;">
+                <li>Войдите в аккаунт SoundCloud</li>
+                <li>В Network найдите запрос к <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">/connect</code></li>
+                <li>Скопируйте значение <code style="background: var(--bg-elevated); padding: 2px 6px; border-radius: 4px;">oauth_token</code></li>
+            </ol>
+            
+            <div style="background: var(--bg-elevated); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                    <i class="fas fa-info-circle" style="color: var(--accent);"></i> 
+                    Без токена SoundCloud работает в ограниченном режиме - только поиск и популярные треки.
+                </p>
+            </div>
+        </div>
+        <button class="btn-primary" style="width: 100%;" onclick="closeModal('soundcloudTokenModal')">Понятно</button>
+    </div>
+</div>
+
+<!-- МОДАЛКА ПОИСКА ДРУЗЕЙ -->
+<div id="friendSearchModal" class="modal">
+    <div class="glass-card modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-friends"></i> Поиск друзей</h3>
+            <div class="modal-close" onclick="closeModal('friendSearchModal')">
+                <i class="fas fa-xmark"></i>
+            </div>
+        </div>
+        <div style="padding: 16px 0;">
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label>Введите имя пользователя</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="friendSearchInput" placeholder="Введите имя..." style="flex: 1;">
+                    <button class="btn-primary" onclick="searchFriends()" style="padding: 10px 16px;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="friendSearchResults" style="max-height: 300px; overflow-y: auto;">
+                <p style="text-align: center; color: var(--text-muted); padding: 20px;">
+                    Введите имя для поиска пользователей
+                </p>
+            </div>
+        </div>
+        <button class="glass-btn" style="width: 100%;" onclick="closeModal('friendSearchModal')">Закрыть</button>
+    </div>
+</div>
+
+{% endblock %}
